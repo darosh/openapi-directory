@@ -23,10 +23,12 @@
     "got": "^8.0.0",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-awspublish": "^3.2.0",
+    "gulp-help-doc": "^1.1.0",
     "gulp-if": "^2.0.2",
     "gulp-rename": "^1.2.2",
     "gulp-stats": "0.0.4",
     "gulp-util": "^3.0.8",
+    "is-online": "^7.0.0",
     "js-yaml": "^3.4.3",
     "json-merge-patch": "^0.2.3",
     "json-pointer": "^0.6.0",
@@ -51,7 +53,8 @@
     "tar-stream": "^1.5.5",
     "through2": "^2.0.3",
     "through2-concurrent": "^1.1.1",
-    "urijs": "^1.16.1"
+    "urijs": "^1.16.1",
+    "yargs": "^10.0.3"
   },
   "private": true,
   "repository": {

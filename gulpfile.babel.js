@@ -6,7 +6,7 @@ import {
   badge,
   git,
   json,
-  logo,
+  logo, online,
   preferred,
   swagger,
   transform as $,
@@ -82,3 +82,4 @@ task('deploy', series('rebuild', 'index', 'badge', 's3'))
 task('default', series('validate:quite', 'deploy'))
 task('update:leads', update('APIs/**/swagger.yaml'))
 task('update', series('clean:log', 'update:leads'))
+task('online', online())
