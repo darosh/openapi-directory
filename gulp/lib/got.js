@@ -14,7 +14,7 @@ export default function got (url, opt) {
   const name = fileUrl(url)
 
   if (cacheFirst && existsSync(name)) {
-    return readFileAsync(name, 'utf8')
+    return readFileAsync(name, opt && opt.encoding !== null ? 'utf8' : null)
       .then(res => {
         logFile(url)
         return {body: opt && opt.json ? JSON.parse(res) : res}
