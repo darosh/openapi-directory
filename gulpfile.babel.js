@@ -45,7 +45,7 @@ task('s3', s3(
 ))
 
 /**
- * Deletes all artifact folders.
+ * Deletes all artifact folders
  *
  * @task {clean}
  * @group {Cleaning}
@@ -61,7 +61,7 @@ task('clean', () => del(['.dist', '.cache', '.log']))
 task('clean:log', () => del(['.log']))
 
 /**
- * Deletes '.cache/test' folder.
+ * Deletes '.cache/test' folder
  *
  * @task {clean:test}
  * @group {Cleaning}
@@ -69,7 +69,7 @@ task('clean:log', () => del(['.log']))
 task('clean:test', () => del(['.cache/test']))
 
 /**
- * Deletes HTTP cache and stored responses.
+ * Deletes HTTP cache and stored responses
  *
  * @task {clean:http}
  * @group {Cleaning}
@@ -77,7 +77,7 @@ task('clean:test', () => del(['.cache/test']))
 task('clean:http', () => del(['.cache/http', '.cache/https', '.cache/http.sqlite']))
 
 /**
- * Deletes all built specs.
+ * Deletes all built specs
  *
  * @task {clean:specs}
  * @group {Cleaning}
@@ -85,7 +85,7 @@ task('clean:http', () => del(['.cache/http', '.cache/https', '.cache/http.sqlite
 task('clean:specs', () => del(['.dist/v2/specs', '.dist/v2/*.json']))
 
 /**
- * Rebuild specs in '.dist' folder.
+ * Rebuild specs in '.dist' folder
  *
  * @task {rebuild}
  */
@@ -106,7 +106,7 @@ task('swagger', () => src('resources/apis_guru_swagger.yaml')
 task('badge', () => src('.dist/v2/metrics.json').pipe(badge('.dist/badges')).pipe(dest('.dist/badges')))
 
 /**
- * Validate API specifications with high-level report only and without writing detailed '.log' files.
+ * Validate API specifications, summary only, no '.log/**' files
  *
  * @task {test:quite}
  * @group {Continuous integration}
@@ -118,7 +118,7 @@ task('test:quite', () => src('APIs/**/swagger.yaml')
 )
 
 /**
- * Validate API specifications.
+ * Validate API specifications
  *
  * @task {test}
  */
@@ -136,7 +136,7 @@ task('test', () => src('APIs/**/swagger.yaml')
 task('online', online())
 
 /**
- * Rebuild and deploy to Amazon S3.
+ * Rebuild and deploy to Amazon S3
  *
  * @task {deploy}
  * @group {Continuous integration}
@@ -146,7 +146,7 @@ task('deploy', series('online', 'rebuild', 'index', 'badge', 's3'))
 task('update:leads', update('APIs/**/swagger.yaml'))
 
 /**
- * Update specs from sources.
+ * Update specs from sources
  *
  * @task {update}
  */
@@ -164,7 +164,7 @@ task('default', function help (cb) {
 })
 
 /**
- * Test & deploy main CI task.
+ * Test & deploy main CI task
  *
  * @task {publish}
  * @group {Continuous integration}
