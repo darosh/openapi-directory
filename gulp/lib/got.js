@@ -1,7 +1,7 @@
 const GOT = require('got')
 const {log} = require('gulp-util')
 const colors = require('chalk')
-const {writeFile, readFile, readFileSync, existsSync, createReadStream} = require('fs')
+const {writeFile, readFile, readFileSync, existsSync, createReadStream, createWriteStream} = require('fs')
 const {join, dirname} = require('path')
 const {promisify} = require('util')
 const mkdirp = require('mkdirp')
@@ -68,7 +68,7 @@ got.stream = function (url) {
 
     const req = GOT.stream.apply(null, arguments)
 
-    req.on('response', res => {
+    const ret = req.on('response', res => {
       clearInterval(interval)
       logRes(res)
       store(res, name)
@@ -79,7 +79,7 @@ got.stream = function (url) {
       })
 
     interval = logPending(url, req)
-    return req
+    return ret
   }
 }
 
@@ -123,7 +123,6 @@ function fileUrl (url) {
 }
 
 function store (res, name) {
-  // if (res.body && !res.fromCache) {
   if (res.body) {
     mkdirp(dirname(name), (err) => {
       if (!err) {
@@ -136,5 +135,12 @@ function store (res, name) {
     })
 
     return true
+  } else if (res.readable) {
+    mkdirp(dirname(name), (err) => {
+      res.pipe(createWriteStream(name))
+      logStore(name)
+    })
+  } else {
+    throw new Error('I have no idea what I am doing.')
   }
 }
