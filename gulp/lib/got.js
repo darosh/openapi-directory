@@ -60,7 +60,6 @@ export default function got (url, opt) {
 }
 
 got.stream = function (url, opt) {
-  console.log(url)
   pending++
   const name = fileUrl(url)
 
