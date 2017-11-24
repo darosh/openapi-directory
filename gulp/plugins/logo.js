@@ -35,7 +35,7 @@ export function logo (dest, verbose) {
 
             cb(null, file)
           } else {
-            const stream = got.stream(logo, {cache})
+            const stream = got.stream(logo, {cache, bypass: true})
               .on('response', (res) => {
                 if (!ext) {
                   const mime = res.headers['content-type']

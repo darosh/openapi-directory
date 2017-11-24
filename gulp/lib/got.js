@@ -7,15 +7,19 @@ const {promisify} = require('util')
 const mkdirp = require('mkdirp')
 const sanitize = require('sanitize-filename')
 const readFileAsync = promisify(readFile)
+const {PassThrough} = require('stream')
 
 export const cacheFirst = true
+let pending = 0
 
 export default function got (url, opt) {
   const name = fileUrl(url)
+  pending++
 
   if (cacheFirst && existsSync(name)) {
     return readFileAsync(name, opt && opt.encoding !== null ? 'utf8' : null)
       .then(res => {
+        pending--
         logFile(url)
         return {body: opt && opt.json ? JSON.parse(res) : res}
       })
@@ -24,14 +28,11 @@ export default function got (url, opt) {
     const req = GOT.apply(null, arguments)
     const ret = req.then(
       res => {
+        pending--
         logRes(res)
         clearInterval(interval)
 
         const name = fileUrl(url)
-
-        if (url === 'https://www.googleapis.com/discovery/v1/apis/bigquery/v2/rest') {
-          console.log(res)
-        }
 
         if (!store(res, name) && !res.body && (res.statusCode === 304)) {
           try {
@@ -46,6 +47,7 @@ export default function got (url, opt) {
         return res
       },
       err => {
+        pending--
         clearInterval(interval)
         logErr(err, url)
         throw err
@@ -57,23 +59,30 @@ export default function got (url, opt) {
   }
 }
 
-got.stream = function (url) {
+got.stream = function (url, opt) {
+  console.log(url)
+  pending++
   const name = fileUrl(url)
 
-  if (cacheFirst && existsSync(name)) {
+  if ((!opt || !opt.bypass) && cacheFirst && existsSync(name)) {
+    pending--
     logFile(url)
     return createReadStream(name)
   } else {
     let interval
 
     const req = GOT.stream.apply(null, arguments)
+    const dupl = new PassThrough()
+    req.pipe(dupl)
 
     const ret = req.on('response', res => {
+      pending--
       clearInterval(interval)
       logRes(res)
-      store(res, name)
+      store(res, name, dupl)
     })
       .on('error', err => {
+        pending--
         clearInterval(interval)
         logErr(err, url)
       })
@@ -104,10 +113,11 @@ function logPending (url, req) {
   const end = Date.now() + MINUTE * 3
   const interval = setInterval(() => {
     if (!req || (Date.now() < end)) {
-      log(`<${colors.yellow('pending\u2026')}>`, colors.underline(url))
+      log(`<${colors.yellow('pending\u2026' + pending)}>`, colors.underline(url))
     } else {
       if (req.cancel) {
         req.cancel()
+        clearInterval(interval)
       } else {
         req.destroy()
         clearInterval(interval)
@@ -122,8 +132,8 @@ function fileUrl (url) {
   return join('.cache', url.split(/[/?=&:]/g).map(encodeURIComponent).map(sanitize).filter(d => d).join('/')) + '.cache'
 }
 
-function store (res, name) {
-  if (res.body) {
+function store (res, name, dupl) {
+  if (!dupl && res.body) {
     mkdirp(dirname(name), (err) => {
       if (!err) {
         writeFile(name, ((typeof res.body === 'string') || (res.body instanceof Buffer))
@@ -131,15 +141,22 @@ function store (res, name) {
           : JSON.stringify(res.body), () => {
           logStore(name)
         })
+      } else {
+        throw new Error('Folder failed ' + name)
       }
     })
 
     return true
-  } else if (res.readable) {
+  } else if (dupl) {
     mkdirp(dirname(name), (err) => {
-      res.pipe(createWriteStream(name))
-      logStore(name)
+      if (!err) {
+        dupl.pipe(createWriteStream(name))
+        logStore(name)
+      } else {
+        throw new Error('Folder failed ' + name)
+      }
     })
+    return true
   } else {
     throw new Error('I have no idea what I am doing.')
   }
