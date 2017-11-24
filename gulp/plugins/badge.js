@@ -49,7 +49,7 @@ function saveShield (subject, status, color, icon) {
 
   log(PLUGIN_NAME, 'loading', colors.blue(url.pathname))
 
-  return got(url, {encoding: null})
+  return got(url.toString(), {encoding: null})
 }
 
 function escape (obj) {

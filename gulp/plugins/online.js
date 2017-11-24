@@ -5,7 +5,7 @@ const PLUGIN_NAME = 'online'
 
 export function online () {
   return function (cb) {
-    log(PLUGIN_NAME, '\u2026')
+    log(PLUGIN_NAME, '\u2026?')
     isOnline().then(online => {
       if (online) {
         log(PLUGIN_NAME, colors.green('OK'))
