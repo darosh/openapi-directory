@@ -101,7 +101,7 @@ function logFile (url) {
 }
 
 function logStore (url) {
-  log(`<${colors.cyan('store')}>`, colors.grey(url))
+  log(`<${colors.yellow('store')}>`, colors.grey(url))
 }
 
 function logErr (err, url) {
