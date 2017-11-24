@@ -48,7 +48,7 @@ task('s3', s3(
  * Deletes all artifact folders.
  *
  * @task {clean}
- * @group {Cleaning tasks}
+ * @group {Cleaning}
  */
 task('clean', () => del(['.dist', '.cache', '.log']))
 
@@ -56,7 +56,7 @@ task('clean', () => del(['.dist', '.cache', '.log']))
  * Deletes '.log' folder
  *
  * @task {clean:log}
- * @group {Cleaning tasks}
+ * @group {Cleaning}
  */
 task('clean:log', () => del(['.log']))
 
@@ -64,7 +64,7 @@ task('clean:log', () => del(['.log']))
  * Deletes '.cache/test' folder.
  *
  * @task {clean:test}
- * @group {Cleaning tasks}
+ * @group {Cleaning}
  */
 task('clean:test', () => del(['.cache/test']))
 
@@ -72,7 +72,7 @@ task('clean:test', () => del(['.cache/test']))
  * Deletes HTTP cache and stored responses.
  *
  * @task {clean:http}
- * @group {Cleaning tasks}
+ * @group {Cleaning}
  */
 task('clean:http', () => del(['.cache/http', '.cache/https', '.cache/http.sqlite']))
 
@@ -80,7 +80,7 @@ task('clean:http', () => del(['.cache/http', '.cache/https', '.cache/http.sqlite
  * Deletes all built specs.
  *
  * @task {clean:specs}
- * @group {Cleaning tasks}
+ * @group {Cleaning}
  */
 task('clean:specs', () => del(['.dist/v2/specs', '.dist/v2/*.json']))
 
@@ -109,7 +109,7 @@ task('badge', () => src('.dist/v2/metrics.json').pipe(badge('.dist/badges')).pip
  * Validate API specifications with high-level report only and without writing detailed '.log' files.
  *
  * @task {test:quite}
- * @group {Continuous integration tasks}
+ * @group {Continuous integration}
  */
 task('test:quite', () => src('APIs/**/swagger.yaml')
   .pipe(json())
@@ -139,7 +139,7 @@ task('online', online())
  * Rebuild and deploy to Amazon S3.
  *
  * @task {deploy}
- * @group {Continuous integration tasks}
+ * @group {Continuous integration}
  */
 task('deploy', series('online', 'rebuild', 'index', 'badge', 's3'))
 
@@ -153,7 +153,13 @@ task('update:leads', update('APIs/**/swagger.yaml'))
 task('update', series(parallel('clean:log', 'online'), 'update:leads'))
 
 task('default', function help (cb) {
-  usage(gulp)
+  usage(gulp, {
+    padding: 2,
+    groupPadding: 0,
+    defaultGroupName: 'Development',
+    displayDependencies: false,
+    emptyLineBetweenTasks: 0
+  })
   cb()
 })
 
@@ -161,6 +167,6 @@ task('default', function help (cb) {
  * Test & deploy main CI task.
  *
  * @task {publish}
- * @group {Continuous integration tasks}
+ * @group {Continuous integration}
  */
 task('publish', series('test:quite', 'deploy'))
