@@ -66,7 +66,7 @@
     "update": "gulp update",
     "validate": "gulp validate",
     "validate:quite": "gulp validate:quite",
-    "test": "gulp"
+    "test": "gulp publish"
   },
   "@std/esm": {
     "esm": "js",

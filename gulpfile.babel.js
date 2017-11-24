@@ -14,10 +14,13 @@ import {
   yaml
 } from './gulp/plugins'
 
-const {src, dest, task, series} = require('gulp')
+const {src, dest, task, series, parallel} = require('gulp')
+const gulp = require('gulp')
 const rename = require('gulp-rename')
 const del = require('del')
 const _ = (d) => require('gulp-if')(file => !!file.contents, dest(d))
+const usage = require('gulp-help-doc')
+// const {argv: args} = require('yargs')
 
 task('build', () => src('APIs/**/swagger.yaml')
   .pipe(json()) // stores 'contents' in 'yaml', adds 'json', converts to JSON
@@ -41,12 +44,53 @@ task('s3', s3(
   '.cache/s3.json'
 ))
 
+/**
+ * Deletes all artifact folders.
+ *
+ * @task {clean}
+ * @group {Cleaning tasks}
+ */
 task('clean', () => del(['.dist', '.cache', '.log']))
+
+/**
+ * Deletes '.log' folder
+ *
+ * @task {clean:log}
+ * @group {Cleaning tasks}
+ */
 task('clean:log', () => del(['.log']))
-task('clean:validation', () => del(['.cache/validation']))
+
+/**
+ * Deletes '.cache/test' folder.
+ *
+ * @task {clean:test}
+ * @group {Cleaning tasks}
+ */
+task('clean:test', () => del(['.cache/test']))
+
+/**
+ * Deletes HTTP cache and stored responses.
+ *
+ * @task {clean:http}
+ * @group {Cleaning tasks}
+ */
 task('clean:http', () => del(['.cache/http', '.cache/https', '.cache/http.sqlite']))
+
+/**
+ * Deletes all built specs.
+ *
+ * @task {clean:specs}
+ * @group {Cleaning tasks}
+ */
 task('clean:specs', () => del(['.dist/v2/specs', '.dist/v2/*.json']))
+
+/**
+ * Rebuild specs in '.dist' folder.
+ *
+ * @task {rebuild}
+ */
 task('rebuild', series('clean:specs', 'build'))
+
 task('index', () => src('resources/index.html').pipe(dest('.dist/v2')))
 
 task('swagger', () => src('resources/apis_guru_swagger.yaml')
@@ -61,25 +105,62 @@ task('swagger', () => src('resources/apis_guru_swagger.yaml')
 
 task('badge', () => src('.dist/v2/metrics.json').pipe(badge('.dist/badges')).pipe(dest('.dist/badges')))
 
-task('validate:quite', () => src('APIs/**/swagger.yaml')
+/**
+ * Validate API specifications with high-level report only and without writing detailed '.log' files.
+ *
+ * @task {test:quite}
+ * @group {Continuous integration tasks}
+ */
+task('test:quite', () => src('APIs/**/swagger.yaml')
   .pipe(json())
-  .pipe(validate({quite: true, cache: '.cache/validate'}))
+  .pipe(validate({quite: true, cache: '.cache/test'}))
   .pipe(preferred())
 )
 
-task('validate', () => src('APIs/**/swagger.yaml')
+/**
+ * Validate API specifications.
+ *
+ * @task {test}
+ */
+task('test', () => src('APIs/**/swagger.yaml')
   .pipe(json())
-  .pipe(validate({cache: '.cache/validate'}))
+  .pipe(validate({cache: '.cache/test'}))
   .pipe($('warnings')).pipe(_('.log/warnings'))
   .pipe($('fatal')).pipe(_('.log/fatal'))
-  .pipe($('validation.warnings')).pipe(_('.log/validation.warnings'))
-  .pipe($('validation.errors')).pipe(_('.log/validation.errors'))
-  .pipe($('validation.info')).pipe(_('.log/validation.info'))
+  .pipe($('validation.warnings')).pipe(_('.log/test.warnings'))
+  .pipe($('validation.errors')).pipe(_('.log/test.errors'))
+  .pipe($('validation.info')).pipe(_('.log/test.info'))
   .pipe(preferred())
 )
 
-task('deploy', series('rebuild', 'index', 'badge', 's3'))
-task('default', series('validate:quite', 'deploy'))
-task('update:leads', update('APIs/**/swagger.yaml'))
-task('update', series('clean:log', 'update:leads'))
 task('online', online())
+
+/**
+ * Rebuild and deploy to Amazon S3.
+ *
+ * @task {deploy}
+ * @group {Continuous integration tasks}
+ */
+task('deploy', series('online', 'rebuild', 'index', 'badge', 's3'))
+
+task('update:leads', update('APIs/**/swagger.yaml'))
+
+/**
+ * Update specs from sources.
+ *
+ * @task {update}
+ */
+task('update', series(parallel('clean:log', 'online'), 'update:leads'))
+
+task('default', function help (cb) {
+  usage(gulp)
+  cb()
+})
+
+/**
+ * Test & deploy main CI task.
+ *
+ * @task {publish}
+ * @group {Continuous integration tasks}
+ */
+task('publish', series('test:quite', 'deploy'))
