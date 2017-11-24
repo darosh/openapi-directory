@@ -9,3 +9,6 @@ cache:
   - .cache
 git:
   depth: 9999
+branches:
+  only:
+  - scripts

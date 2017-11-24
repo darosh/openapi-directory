@@ -13,3 +13,4 @@
 
 - [x] [Travis caching](https://docs.travis-ci.com/user/caching/) for faster build
 - [x] set env `FORCE_COLOR=1` for colored gulp output
+- [x] set env `AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY`
