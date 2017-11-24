@@ -1,0 +1,18 @@
+import { listGitHubFiles, rawGitHubUrl } from '../lib/remote'
+
+export function nytimes () {
+  return listGitHubFiles('NYTimes', 'public_api_specs', '**/*.json')
+    .then(files => files.map(filename => ({
+      info: {
+        'x-providerName': 'nytimes.com',
+        'x-serviceName': filename.split('/')[0],
+        'x-origin': [{
+          url: rawGitHubUrl('NYTimes', 'public_api_specs', filename),
+          format: 'swagger',
+          version: '2.0'
+        }]
+      }
+    })))
+}
+
+nytimes.provider = 'nytimes.com'

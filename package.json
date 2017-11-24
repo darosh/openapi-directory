@@ -1,21 +1,39 @@
 {
-  "dependencies": {
+  "name": "openapi-directory",
+  "devDependencies": {
+    "@keyv/sqlite": "^1.2.12",
+    "@std/esm": "^0.16.0",
     "api-spec-converter": "^2.6.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
     "bluebird": "^3.3.4",
     "commander": "^2.8.1",
     "concurrent-transform": "^1.0.0",
     "deep-sort-object": "^1.0.1",
-    "deploy-to-gh-pages": "^1.2.0",
+    "del": "^3.0.0",
     "editor": "^1.0.0",
+    "eslint": "^4.11.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-friendly-formatter": "^3.0.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
     "glob": "^7.0.3",
-    "gulp": "^3.9.1",
+    "got": "^8.0.0",
+    "gulp": "github:gulpjs/gulp#4.0",
     "gulp-awspublish": "^3.2.0",
+    "gulp-if": "^2.0.2",
     "gulp-rename": "^1.2.2",
+    "gulp-stats": "0.0.4",
+    "gulp-util": "^3.0.8",
     "js-yaml": "^3.4.3",
     "json-merge-patch": "^0.2.3",
     "json-pointer": "^0.6.0",
+    "json-stringify-pretty-compact": "^1.0.4",
     "jsondiffpatch": "^0.1.33",
     "jsonpath": "^0.2.0",
+    "keyv": "^3.0.0",
     "lodash": "^4.6.1",
     "makeRequest": "github:apis-guru/makeRequest",
     "merge-stream": "^1.0.0",
@@ -23,12 +41,16 @@
     "mime-lookup": "0.0.2",
     "mkdirp": "^0.5.1",
     "mktemp": "^0.4.0",
-    "parse-domain": "^0.2.0",
+    "parse-domain": "^1.1.0",
     "recursive-readdir": "^2.1.1",
     "sanitize-filename": "^1.5.3",
+    "serialize-error": "^2.1.0",
     "shelljs": "^0.7.0",
     "swagger-methods": "^1.0.0",
     "sway": "github:apigee-127/sway",
+    "tar-stream": "^1.5.5",
+    "through2": "^2.0.3",
+    "through2-concurrent": "^1.1.1",
     "urijs": "^1.16.1"
   },
   "private": true,
@@ -37,10 +59,14 @@
     "url": "git://github.com/APIs-guru/openapi-directory.git"
   },
   "scripts": {
-    "test": "scripts/collection.js validate -q",
-    "deploy": "scripts/deploy.js && ./scripts/deploy_badges.js && gulp publish"
+    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter gulpfile.babel.js gulp/**/*.js",
+    "update": "gulp update",
+    "validate": "gulp validate",
+    "validate:quite": "gulp validate:quite",
+    "test": "gulp"
   },
-  "devDependencies": {
-    "dredd": "^4.7.0"
+  "@std/esm": {
+    "esm": "js",
+    "cjs": true
   }
 }

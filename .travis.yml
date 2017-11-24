@@ -1,12 +1,11 @@
 language: node_js
 node_js:
-  - "8.7.0"
-env:
-  global:
-    - GH_REF: "github.com/APIs-guru/api-models.git"
-deploy:
-  skip_cleanup: true
-  provider: script
-  script: 'git fetch --unshallow && npm run deploy'
-  on:
-    branch: master
+  - "8"
+before_install:
+- npm config set spin false
+cache:
+  npm: true
+  directories:
+  - .cache
+git:
+  depth: 9999
