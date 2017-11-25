@@ -1,5 +1,5 @@
 {
-  "name": "openapi-directory",
+  "name": "openapi-directory-gulp",
   "version": "0.1.0-scripts-alpha-1",
   "devDependencies": {
     "@keyv/sqlite": "^1.2.12",
