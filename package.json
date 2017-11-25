@@ -1,5 +1,6 @@
 {
   "name": "openapi-directory",
+  "version": "0.1.0-scripts-alpha-1",
   "devDependencies": {
     "@keyv/sqlite": "^1.2.12",
     "@std/esm": "^0.16.0",
