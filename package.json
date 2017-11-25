@@ -1,7 +1,7 @@
 {
-  "name": "openapi-directory",
+  "name": "openapi-directory-gulp",
   "version": "0.1.0-scripts-alpha-1",
-  "devDependencies": {
+  "dependencies": {
     "@keyv/sqlite": "^1.2.12",
     "@std/esm": "^0.16.0",
     "api-spec-converter": "^2.6.0",
