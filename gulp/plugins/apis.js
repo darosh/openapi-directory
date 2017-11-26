@@ -35,22 +35,24 @@ export function apis (rootUrl, apisFile, metricsFile) {
     const swagger = file.json
     const id = swagger.info['x-providerName'] + (swagger.info['x-serviceName'] ? ':' + swagger.info['x-serviceName'] : '')
 
-    json[id] = json[id] || {versions: {}, added: file.dates[1]}
+    json[id] = json[id] || {versions: {}, added: file.dates ? file.dates[1] : undefined}
 
     if (swagger.info['x-preferred']) {
       json[id].preferred = swagger.info.version
     }
 
     // FIXME: here we don't track deleted version, not a problem for right now :)
-    json[id].added = file.dates[1] < json[id].added ? file.dates[1] : json[id].added
+    if (file.dates) {
+      json[id].added = file.dates[1] < json[id].added ? file.dates[1] : json[id].added
+    }
 
     json[id].versions[swagger.info.version] = {
       swaggerUrl: rootUrl + file.relative.replace(/\\/g, '/').replace(/\.yaml$/, '.json'),
       swaggerYamlUrl: rootUrl + file.relative.replace(/\\/g, '/'),
       info: swagger.info,
       externalDocs: swagger.externalDocs,
-      added: file.dates[1],
-      updated: file.dates[0]
+      added: file.dates ? file.dates[1] : undefined,
+      updated: file.dates ? file.dates[0] : undefined
     }
 
     metrics.numSpecs++

@@ -16,10 +16,13 @@ import {
   yaml
 } from './gulp/plugins'
 
+const {argv} = require('yargs');
 const {src, dest, task, series, parallel} = require('gulp')
+const {log, colors} = require('gulp-util')
 const rename = require('gulp-rename')
 const del = require('del')
-const _ = (d) => require('gulp-if')(file => !!file.contents, dest(d))
+const gif = require('gulp-if')
+const _ = (d) => gif(file => !!file.contents, dest(d))
 
 /**
  * Clean tasks
@@ -107,7 +110,7 @@ task('build_badges', build_badges)
 const build_specs = () => src('APIs/**/swagger.yaml')
   .pipe(json()) // stores 'contents' in 'yaml', adds 'json', converts to JSON
   .pipe(logo('.dist/v2/cache/logo')) // adds 'logo'
-  .pipe(git()) // adds 'dates'
+  .pipe(gif(!argv.skipGit, git())) // adds 'dates'
   .pipe(api('https://api.apis.guru/v2/cache/logo/')) // modifies 'json.info'
   .pipe(rename({extname: '.json'}))
   .pipe($('json'))
@@ -118,6 +121,9 @@ const build_specs = () => src('APIs/**/swagger.yaml')
   .pipe(apis('https://api.apis.guru/v2/', 'list.json', 'metrics.json')) // creates <api.json> and <metrics.json>
   .pipe(dest('.dist/v2'))
 build_specs.description = 'Build specifications and logos'
+build_specs.flags = {
+  '--skip-git': 'Do not add "added" and "modified" dates from Git log'
+}
 task(build_specs)
 
 task('build_index', () => src('resources/index.html').pipe(dest('.dist/v2')))
@@ -158,5 +164,9 @@ test_and_deploy.description = 'Main CI task'
  */
 
 export default function (done) {
+  log('Version', colors.cyan(require('./package.json').version))
+  log('Working directory', colors.magenta(process.cwd()))
+  log('Arguments')
+  console.log(colors.magenta(JSON.stringify(argv, null, 2)))
   done()
 }

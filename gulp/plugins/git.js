@@ -13,7 +13,7 @@ export function git () {
     // const cmd = `git log --format=%aD -- ${file.path}`
     exec(cmd, {cwd: process.cwd()}, (err, stdout, stderr) => {
       if (err) {
-        return cb(new PluginError(err))
+        return cb(new PluginError(PLUGIN_NAME, err))
       }
 
       let dates = stdout.split('\n').filter(d => d)
