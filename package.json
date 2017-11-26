@@ -1,6 +1,6 @@
 {
   "name": "openapi-directory-tools",
-  "version": "0.1.0-scripts-alpha-1",
+  "version": "0.1.0-scripts-alpha-2",
   "bin": {
     "odt": "bin/odt.js"
   },
@@ -16,13 +16,6 @@
     "deep-sort-object": "^1.0.1",
     "del": "^3.0.0",
     "editor": "^1.0.0",
-    "eslint": "^4.11.0",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-friendly-formatter": "^3.0.0",
-    "eslint-plugin-import": "^2.8.0",
-    "eslint-plugin-node": "^5.2.1",
-    "eslint-plugin-promise": "^3.6.0",
-    "eslint-plugin-standard": "^3.0.1",
     "glob": "^7.0.3",
     "got": "^8.0.0",
     "gulp": "github:gulpjs/gulp#4.0",
@@ -61,17 +54,22 @@
     "urijs": "^1.16.1",
     "yargs": "^10.0.3"
   },
+  "devDependencies": {
+    "eslint": "^4.11.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-friendly-formatter": "^3.0.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1"
+  },
   "private": true,
   "repository": {
     "type": "git",
     "url": "git://github.com/APIs-guru/openapi-directory.git"
   },
   "scripts": {
-    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter gulpfile.babel.js gulp/**/*.js",
-    "update": "gulp update",
-    "validate": "gulp validate",
-    "validate:quite": "gulp validate:quite",
-    "test": "gulp publish"
+    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter gulpfile.babel.js gulp/**/*.js"
   },
   "@std/esm": {
     "esm": "js",
