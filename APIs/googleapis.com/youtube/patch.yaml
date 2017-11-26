@@ -1,8 +1,0 @@
-info:
-  x-logo:
-    url: >-
-      https://twitter.com/youtube/profile_image?size=original
-  contact:
-    x-twitter: youtube
-  x-apisguru-categories:
-    - media
