@@ -1,9 +1,0 @@
-externalDocs:
-  url: 'https://thenounproject.com/developers/'
-info:
-  title: The Noun Project
-  description: Icons for Everything
-  x-logo:
-    url: 'https://thenounproject.com/static/img/nounproject_logo.png'
-  x-apisguru-categories:
-    - media

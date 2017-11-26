@@ -1,5 +1,0 @@
-info:
-  x-apisguru-categories:
-    - open_data
-  description: 'City Context provides a straightforward API to access UK Open Data: crime statistics, schools, demographics and more.'
-  title: City Context

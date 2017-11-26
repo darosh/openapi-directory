@@ -1,8 +1,0 @@
-externalDocs:
-  url: 'https://docs.jirafe.com/api/'
-info:
-  x-apisguru-categories:
-    - marketing
-  x-logo:
-    backgroundColor: '#4BC9C5'
-    url: 'https://docs.jirafe.com/img/jrf-logo--white-100x36.a56c.png'
