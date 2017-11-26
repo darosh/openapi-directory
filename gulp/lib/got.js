@@ -1,7 +1,7 @@
 const GOT = require('got')
 const {log} = require('gulp-util')
 const colors = require('chalk')
-const {writeFile, readFile, readFileSync, existsSync, createReadStream, createWriteStream} = require('fs')
+const {writeFile, readFile, readFileSync, stat, createReadStream, createWriteStream} = require('fs')
 const {join, dirname} = require('path')
 const {promisify} = require('util')
 const mkdirp = require('mkdirp')
@@ -12,30 +12,36 @@ const {PassThrough} = require('stream')
 export const cacheFirst = true
 let pending = 0
 
-export default function got (url, opt) {
+export default function got (url, opt, bypass) {
   const name = fileUrl(url)
   pending++
 
-  if (cacheFirst && existsSync(name)) {
+  if (cacheFirst && !bypass) {
     return readFileAsync(name, opt && opt.encoding !== null ? 'utf8' : null)
-      .then(res => {
-        pending--
-        logFile(url)
-        return {body: opt && opt.json ? JSON.parse(res) : res}
-      })
+      .then(
+        res => {
+          pending--
+          logFile(url)
+          return {body: opt && opt.json ? JSON.parse(res) : res}
+        },
+        () => {
+          return got(url, opt, true)
+        }
+      )
   } else {
     let interval
     const req = GOT.apply(null, arguments)
     const ret = req.then(
       res => {
         pending--
-        logRes(res)
+        logRes(res, url)
         clearInterval(interval)
 
         const name = fileUrl(url)
 
         if (!store(res, name) && !res.body && (res.statusCode === 304)) {
           try {
+            console.log('sync')
             res.body = readFileSync(name, 'utf8')
 
             if (opt && opt.json) {
@@ -62,37 +68,60 @@ export default function got (url, opt) {
 got.stream = function (url, opt) {
   pending++
   const name = fileUrl(url)
+  const proxy = new PassThrough()
 
-  if ((!opt || !opt.bypass) && cacheFirst && existsSync(name)) {
-    pending--
-    logFile(url)
-    return createReadStream(name)
-  } else {
-    let interval
-
-    const req = GOT.stream.apply(null, arguments)
-    const dupl = new PassThrough()
-    req.pipe(dupl)
-
-    const ret = req.on('response', res => {
-      pending--
-      clearInterval(interval)
-      logRes(res)
-      store(res, name, dupl)
+  if ((!opt || !opt.bypass) && cacheFirst) {
+    stat(name, (err) => {
+      if (err) {
+        streamRequest(proxy, name, url, opt)
+      } else {
+        streamCache(proxy, name)
+      }
     })
-      .on('error', err => {
-        pending--
-        clearInterval(interval)
-        logErr(err, url)
-      })
-
-    interval = logPending(url, req)
-    return ret
+  } else {
+    streamRequest(proxy, name, url)
   }
+
+  return proxy
 }
 
-function logRes (res) {
-  log(`<${res.fromCache ? colors.green('cache') : colors.blue('got')}>`, colors.grey(res.url))
+function streamCache (proxy, name) {
+  pending--
+  createReadStream(name).pipe(proxy)
+  setImmediate(() => {
+    proxy.emit('response', {fromCache: true})
+  })
+}
+
+function streamRequest (proxy, name, url, opt) {
+  let interval
+  const req = GOT.stream(url, opt)
+  const dupl = new PassThrough()
+
+  req.pipe(dupl)
+
+  const ret = req
+    .on('response', res => {
+      pending--
+      clearInterval(interval)
+      logRes(res, url)
+      store(res, name, dupl)
+      proxy.emit('response', res)
+    })
+    .on('error', err => {
+      pending--
+      clearInterval(interval)
+      logErr(err, url)
+      proxy.emit('error', err)
+    })
+
+  interval = logPending(url, req)
+
+  ret.pipe(proxy)
+}
+
+function logRes (res, url) {
+  log(`<${res.fromCache ? colors.green('cache') : colors.blue('got')}>`, colors.grey(url))
 }
 
 function logFile (url) {
@@ -104,7 +133,7 @@ function logStore (url) {
 }
 
 function logErr (err, url) {
-  log(`<${colors.red('error')}>`, colors.red(err.message), colors.underline(url || err.url))
+  log(`<${colors.red('error')}>`, colors.red(err.message), colors.underline(url))
 }
 
 function logPending (url, req) {
@@ -132,31 +161,22 @@ function fileUrl (url) {
 }
 
 function store (res, name, dupl) {
-  if (!dupl && res.body) {
-    mkdirp(dirname(name), (err) => {
-      if (!err) {
+  mkdirp(dirname(name), (err) => {
+    if (!err) {
+      if (!dupl && res.body) {
         writeFile(name, ((typeof res.body === 'string') || (res.body instanceof Buffer))
           ? res.body
           : JSON.stringify(res.body), () => {
-          logStore(name)
         })
-      } else {
-        throw new Error('Folder failed ' + name)
-      }
-    })
-
-    return true
-  } else if (dupl) {
-    mkdirp(dirname(name), (err) => {
-      if (!err) {
+      } else if (dupl) {
         dupl.pipe(createWriteStream(name))
-        logStore(name)
-      } else {
-        throw new Error('Folder failed ' + name)
       }
-    })
-    return true
-  } else {
-    throw new Error('I have no idea what I am doing.')
-  }
+
+      logStore(name)
+    } else {
+      throw new Error('Folder failed ' + name)
+    }
+  })
+
+  return (!dupl && res.body) || dupl
 }
