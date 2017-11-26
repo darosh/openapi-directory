@@ -1,4 +1,5 @@
 require('events').defaultMaxListeners = 9999
-
-const DB = require('@keyv/sqlite')
-export const cache = new DB('sqlite://.cache/http.sqlite')
+const Keyv = require('keyv')
+const mkdirp = require('mkdirp')
+mkdirp.sync('.cache')
+export const cache = new Keyv('sqlite://.cache/http.sqlite')
