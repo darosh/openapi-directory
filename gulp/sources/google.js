@@ -1,8 +1,8 @@
-import {cache} from '../lib/cache'
+import {getCache} from '../lib/cache'
 import got from '../lib/got'
 
 export function google () {
-  return got('https://www.googleapis.com/discovery/v1/apis', {json: true, cache})
+  return got('https://www.googleapis.com/discovery/v1/apis', {json: true, cache: getCache()})
     .then(({body}) => body.items.map((value) => ({
       info: {
         'x-providerName': 'googleapis.com',

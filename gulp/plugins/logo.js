@@ -1,4 +1,4 @@
-import { cache } from '../lib/cache'
+import { getCache } from '../lib/cache'
 import got from '../lib/got'
 
 const {obj} = require('through2-concurrent')
@@ -57,7 +57,7 @@ export function logo (dest, verbose) {
   })
 
   function save (target, ext, file, logo, cb) {
-    const stream = got.stream(logo, {cache, bypass: !ext})
+    const stream = got.stream(logo, {cache: getCache(), bypass: !ext})
       .on('response', (res) => {
         if (!ext) {
           const mime = res.headers['content-type']

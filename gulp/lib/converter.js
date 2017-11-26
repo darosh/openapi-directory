@@ -1,5 +1,5 @@
 import got from './got'
-import { cache } from './cache'
+import { getCache } from './cache'
 
 const Promise = require('bluebird')
 const converter = require('api-spec-converter')
@@ -15,7 +15,7 @@ converter.ResourceReaders.url = function (url) {
     },
     retries: 2,
     json: false,
-    cache
+    cache: getCache()
   })
     .then(({body}) => {
       resolve(body)

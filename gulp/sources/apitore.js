@@ -1,9 +1,9 @@
-import {cache} from '../lib/cache'
+import {getCache} from '../lib/cache'
 import got from '../lib/got'
 import _ from 'lodash'
 
 export function apitore () {
-  return got('https://api.apitore.com/json/0', {json: true, cache})
+  return got('https://api.apitore.com/json/0', {json: true, cache: getCache()})
     .then(res => Object.keys(res.body).map(api => {
       const components = api.split('/')
       const apiNumber = _.last(components)

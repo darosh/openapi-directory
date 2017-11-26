@@ -1,9 +1,9 @@
-import { cache } from '../lib/cache'
+import { getCache } from '../lib/cache'
 import got from '../lib/got'
 
 export function swaggerhub () {
   const base = 'https://api.swaggerhub.com/apis/swagger-hub/registry-api'
-  return got(base, {json: true, cache})
+  return got(base, {json: true, cache: getCache()})
     .then(({body}) => {
       const version = body.apis.reverse()
         .find(a => a.properties.filter(e => (e.type === 'X-Published') && (e.value === 'true')))

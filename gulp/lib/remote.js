@@ -1,4 +1,4 @@
-import { cache } from './cache'
+import { getCache } from './cache'
 import got from './got'
 import tar from 'tar-stream'
 import zlib from 'zlib'
@@ -28,7 +28,7 @@ export function listGitHubFiles (user, repo, glob) {
     // const url = `https://github.com/${user}/${repo}/archive/master.tar.gz`
 
     got.stream(url, {
-      cache,
+      cache: getCache(),
       timeout: 5 * MINUTE,
       retries: 3,
       headers: {

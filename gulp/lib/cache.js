@@ -1,5 +1,14 @@
-require('events').defaultMaxListeners = 9999
 const Keyv = require('keyv')
 const mkdirp = require('mkdirp')
-mkdirp.sync('.cache')
-export const cache = new Keyv('sqlite://.cache/http.db')
+
+let cache
+
+export function getCache () {
+  if (cache) {
+    return cache
+  }
+
+  require('events').defaultMaxListeners = 9999
+  mkdirp.sync('.cache')
+  return (cache = new Keyv('sqlite://.cache/http.db'))
+}

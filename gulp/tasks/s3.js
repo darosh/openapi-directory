@@ -7,9 +7,9 @@ const awspublish = require('gulp-awspublish')
 const parallelize = require('concurrent-transform')
 
 export function s3 (files, config, cacheFileName) {
-  mkdirp.sync(dirname(cacheFileName))
-
   function s3 () {
+    mkdirp.sync(dirname(cacheFileName))
+
     // create a new publisher using S3 options
     // http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#constructor-property
     const publisher = awspublish.create(config, {cacheFileName})
