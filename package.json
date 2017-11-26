@@ -1,6 +1,9 @@
 {
-  "name": "openapi-directory-gulp",
+  "name": "openapi-directory-tools",
   "version": "0.1.0-scripts-alpha-1",
+  "bin": {
+    "odt": "bin/odt.js"
+  },
   "dependencies": {
     "@keyv/sqlite": "^1.2.12",
     "@std/esm": "^0.16.0",
@@ -24,6 +27,7 @@
     "got": "^8.0.0",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-awspublish": "^3.2.0",
+    "gulp-cli": "^1.4.0",
     "gulp-help-doc": "^1.1.0",
     "gulp-if": "^2.0.2",
     "gulp-rename": "^1.2.2",

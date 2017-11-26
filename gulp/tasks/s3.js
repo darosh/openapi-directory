@@ -9,7 +9,7 @@ const parallelize = require('concurrent-transform')
 export function s3 (files, config, cacheFileName) {
   mkdirp.sync(dirname(cacheFileName))
 
-  return function () {
+  function s3 () {
     // create a new publisher using S3 options
     // http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#constructor-property
     const publisher = awspublish.create(config, {cacheFileName})
@@ -26,6 +26,9 @@ export function s3 (files, config, cacheFileName) {
       .pipe(publisher.cache())
       .pipe(awspublish.reporter(['delete', 'create', 'update']))
   }
+
+  s3.description = 'Publish to S3'
+  return s3
 
   function prefixWithDir (dir) {
     return rename(path => {
