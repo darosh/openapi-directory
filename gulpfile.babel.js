@@ -16,13 +16,19 @@ import {
   yaml
 } from './gulp/plugins'
 
-const {argv} = require('yargs');
+const {argv} = require('yargs')
 const {src, dest, task, series, parallel} = require('gulp')
 const {log, colors} = require('gulp-util')
 const rename = require('gulp-rename')
 const del = require('del')
 const gif = require('gulp-if')
 const _ = (d) => gif(file => !!file.contents, dest(d))
+
+/**
+ * Configuration
+ */
+
+require('./gulp/lib/got').setCacheFirst(!argv.skipCache)
 
 /**
  * Clean tasks
@@ -93,7 +99,11 @@ task('test_quite', test_quite)
  * Spec tasks
  */
 
-task('update_leads', update_from_leads('APIs/**/swagger.yaml'))
+const update_leads = update_from_leads('APIs/**/swagger.yaml')
+update_leads.flags = {
+  '--skip-cache': 'Use "RFC compliant cache", instead of "use cache first"'
+}
+task('update_leads', update_leads)
 
 const update = series('online', 'clean_log', 'update_leads')
 update.description = 'Update specs from sources'

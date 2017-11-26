@@ -9,8 +9,12 @@ const sanitize = require('sanitize-filename')
 const readFileAsync = promisify(readFile)
 const {PassThrough} = require('stream')
 
-export const cacheFirst = true
+export let cacheFirst = true
 let pending = 0
+
+export function setCacheFirst (value) {
+  cacheFirst = value
+}
 
 export default function got (url, opt, bypass) {
   const name = fileUrl(url)
