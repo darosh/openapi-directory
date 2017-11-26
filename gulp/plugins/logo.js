@@ -27,36 +27,21 @@ export function logo (dest, verbose) {
         file.logo = logoCache[logo] = urlToFilename(logo)
         let target = join(dest, file.logo)
 
-        stat(target, (err) => {
-          if (!err) {
-            if (verbose) {
-              log(PLUGIN_NAME, colors.green('found'), colors.grey(file.logo))
+        if (!ext) {
+          save(target, ext, file, logo, cb)
+        } else {
+          stat(target, (err) => {
+            if (!err) {
+              if (verbose) {
+                log(PLUGIN_NAME, colors.green('found'), colors.grey(file.logo))
+              }
+
+              cb(null, file)
+            } else {
+              save(target, ext, file, logo, cb)
             }
-
-            cb(null, file)
-          } else {
-            const stream = got.stream(logo, {cache, bypass: !ext})
-              .on('response', (res) => {
-                if (!ext) {
-                  const mime = res.headers['content-type']
-                  ext = `.${MIME.extension(mime)}`
-                  target += ext
-                  logoCache[logo] += ext
-                  file.logo = logoCache[logo]
-                }
-
-                stream.pipe(createWriteStream(target))
-
-                log(PLUGIN_NAME, colors.grey(res.fromCache ? 'cached' : 'downloaded'), colors.blue(logo))
-
-                cb(null, file)
-              })
-              .on('error', () => {
-                log(PLUGIN_NAME, colors.red('missing'), colors.red(logo))
-                cb(null, file)
-              })
-          }
-        })
+          })
+        }
       } else {
         file.logo = logoCache[logo]
 
@@ -70,6 +55,29 @@ export function logo (dest, verbose) {
       cb(null, file)
     }
   })
+
+  function save (target, ext, file, logo, cb) {
+    const stream = got.stream(logo, {cache, bypass: !ext})
+      .on('response', (res) => {
+        if (!ext) {
+          const mime = res.headers['content-type']
+          ext = `.${MIME.extension(mime)}`
+          target += ext
+          logoCache[logo] += ext
+          file.logo = logoCache[logo]
+        }
+
+        stream.pipe(createWriteStream(target))
+
+        log(PLUGIN_NAME, colors.grey(res.fromCache ? 'cached' : 'downloaded'), colors.blue(logo))
+
+        cb(null, file)
+      })
+      .on('error', () => {
+        log(PLUGIN_NAME, colors.red('missing'), colors.red(logo))
+        cb(null, file)
+      })
+  }
 }
 
 function urlToFilename (url, stripQuery = true) {
