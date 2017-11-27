@@ -31,6 +31,7 @@ const _ = (d) => gif(file => !!file.contents, dest(d))
  */
 
 require('./lib/got').setCacheFirst(!argv.skipCache)
+require('./lib/got').setCacheFolder('.cache')
 require('./lib/stringify').setCompact(!argv.noCompactJson)
 
 /**
