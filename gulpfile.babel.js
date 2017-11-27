@@ -13,6 +13,7 @@ import {
   swagger,
   transform as $,
   validate,
+  empty,
   yaml
 } from './plugins'
 
@@ -22,6 +23,7 @@ const {log, colors} = require('gulp-util')
 const rename = require('gulp-rename')
 const del = require('del')
 const gif = require('gulp-if')
+const {readFileSync} = require('fs')
 const _ = (d) => gif(file => !!file.contents, dest(d))
 
 /**
@@ -109,7 +111,16 @@ task('update', update)
  * Build tasks
  */
 
-const build_badges = () => src('.dist/v2/metrics.json').pipe(badge('.dist/badges')).pipe(dest('.dist/badges'))
+const build_badges = () => {
+  const metrics = JSON.parse(readFileSync('.dist/v2/metrics.json'))
+  return empty()
+    .pipe(badge('.dist/badges', [
+      ['APIs in collection', metrics.numAPIs, 'orange'],
+      ['Endpoints', metrics.numEndpoints, 'red'],
+      ['OpenAPI specs', metrics.numSpecs, 'yellow'],
+      ['Tested on', metrics.numSpecs + ' specs', 'green', readFileSync('branding/icon-16x16.png', 'base64')]]))
+    .pipe(dest('.dist/badges'))
+}
 build_badges.description = 'Download shield.io images'
 task('build_badges', build_badges)
 
