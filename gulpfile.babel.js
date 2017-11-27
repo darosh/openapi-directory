@@ -170,7 +170,8 @@ test_and_deploy.description = 'Main CI task'
  */
 
 export default function (done) {
-  log('Version', colors.cyan(require('./package.json').version))
+  log('Tools version', colors.cyan(require('./package.json').version))
+  log('Engine version', colors.cyan(process.version))
   log('Working directory', colors.magenta(process.cwd()))
   log('Arguments')
   console.log(colors.magenta(JSON.stringify(argv, null, 2)))
