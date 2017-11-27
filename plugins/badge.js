@@ -11,7 +11,7 @@ const PLUGIN_NAME = 'badges'
 
 export function badge (dest) {
   mkdirp.sync(dest)
-  const logo = readFileSync('branding/icon-16x16.png').toString('base64')
+  const logo = encodeURIComponent(readFileSync('branding/icon-16x16.png', 'base64'))
 
   return obj(function (file, enc, cb) {
     const metrics = JSON.parse(file.contents)
