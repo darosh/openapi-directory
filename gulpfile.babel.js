@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 
-import { s3 } from './gulp/tasks/s3'
-import { update as update_from_leads } from './gulp/tasks/update'
+import { s3 } from './tasks/s3'
+import { update as update_from_leads } from './tasks/update'
 import {
   api,
   apis,
@@ -14,7 +14,7 @@ import {
   transform as $,
   validate,
   yaml
-} from './gulp/plugins'
+} from './plugins'
 
 const {argv} = require('yargs')
 const {src, dest, task, series, parallel} = require('gulp')
@@ -28,7 +28,7 @@ const _ = (d) => gif(file => !!file.contents, dest(d))
  * Configuration
  */
 
-require('./gulp/lib/got').setCacheFirst(!argv.skipCache)
+require('./lib/got').setCacheFirst(!argv.skipCache)
 
 /**
  * Clean tasks
