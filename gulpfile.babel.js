@@ -72,26 +72,22 @@ task('online', online())
  * Test tasks
  */
 
-const test = function () {
-  src('APIs/**/swagger.yaml')
-    .pipe(json())
-    .pipe(validate({cache: '.cache/test'}))
-    .pipe($('warnings')).pipe(_('.log/warnings'))
-    .pipe($('fatal')).pipe(_('.log/fatal'))
-    .pipe($('validation.warnings')).pipe(_('.log/test.warnings'))
-    .pipe($('validation.errors')).pipe(_('.log/test.errors'))
-    .pipe($('validation.info')).pipe(_('.log/test.info'))
-    .pipe(preferred())
-}
+const test = () => src('APIs/**/swagger.yaml')
+  .pipe(json())
+  .pipe(validate({cache: '.cache/test'}))
+  .pipe($('warnings')).pipe(_('.log/warnings'))
+  .pipe($('fatal')).pipe(_('.log/fatal'))
+  .pipe($('validation.warnings')).pipe(_('.log/test.warnings'))
+  .pipe($('validation.errors')).pipe(_('.log/test.errors'))
+  .pipe($('validation.info')).pipe(_('.log/test.info'))
+  .pipe(preferred())
 test.description = 'Validate API specifications'
 task('test', test)
 
-const test_quite = function () {
-  return src('APIs/**/swagger.yaml')
-    .pipe(json())
-    .pipe(validate({quite: true, cache: '.cache/test'}))
-    .pipe(preferred())
-}
+const test_quite = () => src('APIs/**/swagger.yaml')
+  .pipe(json())
+  .pipe(validate({quite: true, cache: '.cache/test'}))
+  .pipe(preferred())
 test_quite.description = 'Validate API specifications, summary only, no ".log/**" files'
 task('test_quite', test_quite)
 
