@@ -23,6 +23,7 @@ const {log, colors} = require('gulp-util')
 const rename = require('gulp-rename')
 const del = require('del')
 const gif = require('gulp-if')
+const {stringify} = require('./lib/stringify')
 const {readFileSync} = require('fs')
 const _ = (d) => gif(file => !!file.contents, dest(d))
 
@@ -191,7 +192,6 @@ export default function (done) {
   log('Tools version', colors.cyan(require('./package.json').version))
   log('Engine version', colors.cyan(process.version))
   log('Working directory', colors.magenta(process.cwd()))
-  log('Arguments')
-  console.log(colors.magenta(JSON.stringify(argv, null, 2)))
+  log('Arguments', colors.magenta(stringify(argv)))
   done()
 }
