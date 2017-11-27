@@ -21,10 +21,10 @@ export function s3 (files, config, cacheFileName) {
     }
 
     return merge.apply(null, files.map(f => src(f[0]).pipe(prefixWithDir(f[1]))))
-      .pipe(parallelize(publisher.publish(headers), 10))
+      .pipe(parallelize(publisher.publish(headers), 32))
       .pipe(publisher.sync())
       .pipe(publisher.cache())
-      .pipe(awspublish.reporter(['delete', 'create', 'update']))
+      .pipe(awspublish.reporter({states: ['delete', 'create', 'update']}))
   }
 
   s3.description = 'Publish to S3'
