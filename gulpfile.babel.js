@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { s3 } from './tasks/s3'
+import { s3 as _s3 } from './tasks/s3'
 import { update as update_from_leads } from './tasks/update'
 import {
   api,
@@ -164,12 +164,16 @@ task('build', build)
  * Publish tasks
  */
 
-task(s3(
-  [['.dist/**', '']],
-  // {region: 'us-east-1', params: {Bucket: 'api.apis.guru'}},
-  {region: 'us-east-1', params: {Bucket: 'openapi-directory.eu'}},
-  '.cache/s3.json'
-))
+const s3 = () => _s3([['.dist/**', '']], {
+  region: 'us-east-1' || argv.region,
+  params: {Bucket: 'api.apis.guru' || argv.bucket}
+}, '.cache/s3.json')
+s3.description = 'Publish to S3'
+s3.flags = {
+  '--bucket': 'S3 bucket, default: "api.apis.guru"',
+  '--region': 'S3 region, default: "us-east-1"'
+}
+task(s3)
 
 export const deploy = series('online', 'build', 's3')
 deploy.description = 'Build and deploy to S3'
