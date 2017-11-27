@@ -1,9 +1,8 @@
 const {obj} = require('through2')
 const {load} = require('js-yaml')
 const {log, colors, PluginError} = require('gulp-util')
-const stringify = (json) => (require('json-stringify-pretty-compact')(json, {maxLength: 120}))
 const {dirname} = require('path')
-// const stringify = JSON.stringify
+const {stringify} = require('../lib/stringify')
 
 const PLUGIN_NAME = 'json'
 

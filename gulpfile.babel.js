@@ -31,6 +31,7 @@ const _ = (d) => gif(file => !!file.contents, dest(d))
  */
 
 require('./lib/got').setCacheFirst(!argv.skipCache)
+require('./lib/stringify').setCompact(!argv.noCompactJson)
 
 /**
  * Clean tasks
@@ -139,7 +140,8 @@ const build_specs = () => src('APIs/**/swagger.yaml')
   .pipe(dest('.dist/v2'))
 build_specs.description = 'Build specifications and logos'
 build_specs.flags = {
-  '--skip-git': 'Do not add "added" and "modified" dates from Git log'
+  '--skip-git': 'Do not add "added" and "modified" dates from Git log',
+  '--no-compact-json': 'Do not use "json-stringify-pretty-compact"'
 }
 task(build_specs)
 

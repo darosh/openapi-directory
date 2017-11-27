@@ -2,8 +2,7 @@ const {obj} = require('through2')
 const {dirname} = require('path')
 const {File, log, colors} = require('gulp-util')
 const {sortJson} = require('../lib/sortJson')
-const stringify = (json) => (require('json-stringify-pretty-compact')(json, {maxLength: 120}))
-// const stringify = JSON.stringify
+const {stringify} = require('../lib/stringify')
 
 const PLUGIN_NAME = 'api'
 
