@@ -10,8 +10,7 @@ export function git () {
     maxConcurrency: 8
   }, function (file, enc, cb) {
     const cmd = `git log --format=%aD --follow -- ${file.path}`
-    // const cmd = `git log --format=%aD -- ${file.path}`
-    exec(cmd, {cwd: process.cwd()}, (err, stdout, stderr) => {
+    exec(cmd, {cwd: process.cwd()}, (err, stdout) => {
       if (err) {
         return cb(new PluginError(PLUGIN_NAME, err))
       }
