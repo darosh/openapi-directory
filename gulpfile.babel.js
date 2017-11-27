@@ -165,8 +165,8 @@ task('build', build)
  */
 
 const s3 = () => _s3([['.dist/**', '']], {
-  region: 'us-east-1' || argv.region,
-  params: {Bucket: 'api.apis.guru' || argv.bucket}
+  region: argv.region || 'us-east-1',
+  params: {Bucket: argv.bucket || 'api.apis.guru'}
 }, '.cache/s3.json')
 s3.description = 'Publish to S3'
 s3.flags = {
