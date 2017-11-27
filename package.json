@@ -6,7 +6,6 @@
   },
   "dependencies": {
     "@keyv/sqlite": "^1.2.12",
-    "@std/esm": "^0.17.1",
     "api-spec-converter": "^2.6.0",
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
@@ -48,6 +47,7 @@
     "yargs": "^10.0.3"
   },
   "devDependencies": {
+    "@std/esm": "^0.17.2",
     "eslint": "^4.11.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-friendly-formatter": "^3.0.0",
