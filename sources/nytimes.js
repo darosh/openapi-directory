@@ -1,7 +1,7 @@
-import { listGitHubFiles, rawGitHubUrl } from '../lib/remote'
+import { listGitHubFilesAsync, rawGitHubUrl } from '../lib/github'
 
 export function nytimes () {
-  return listGitHubFiles('NYTimes', 'public_api_specs', '**/*.json')
+  return listGitHubFilesAsync('NYTimes', 'public_api_specs', '**/*.json')
     .then(files => files.map(filename => ({
       info: {
         'x-providerName': 'nytimes.com',

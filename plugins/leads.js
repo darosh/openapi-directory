@@ -1,4 +1,4 @@
-import { loadLeads } from '../lib/loadLeads'
+import { loadLeadsAsync } from '../lib/loadLeadsAsync'
 
 const {log, colors, File, PluginError} = require('gulp-util')
 const {obj} = require('through2')
@@ -15,7 +15,7 @@ export function leads () {
   }, function (cb) {
     log(`loaded ${colors.magenta(Object.keys(specs).length)} specs`)
 
-    loadLeads(specs, {quite: true}).then(leads => {
+    loadLeadsAsync(specs, {quite: true}).then(leads => {
       log(`parsed ${colors.magenta(leads.length)} leads`)
 
       leads.forEach(([path, lead]) => {

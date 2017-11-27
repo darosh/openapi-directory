@@ -1,7 +1,7 @@
-import { listGitHubFiles, rawGitHubUrl } from '../lib/remote'
+import { listGitHubFilesAsync, rawGitHubUrl } from '../lib/github'
 
 export function box () {
-  return listGitHubFiles('box', 'box-openapi', '**/*.json')
+  return listGitHubFilesAsync('box', 'box-openapi', '**/*.json')
     .then(files => files.map(filename => ({
       info: {
         'x-providerName': 'box.com',

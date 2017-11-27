@@ -1,7 +1,7 @@
-import { listGitHubFiles, rawGitHubUrl } from '../lib/remote'
+import { listGitHubFilesAsync, rawGitHubUrl } from '../lib/github'
 
 export function bcgov () {
-  return listGitHubFiles('bcgov', 'api-specs', '**/*.json')
+  return listGitHubFilesAsync('bcgov', 'api-specs', '**/*.json')
     .then(files => files.map(filename => ({
       info: {
         'x-providerName': bcgov.provider,

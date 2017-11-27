@@ -1,8 +1,8 @@
 import path from 'path'
-import { listGitHubFiles, rawGitHubUrl } from '../lib/remote'
+import { listGitHubFilesAsync, rawGitHubUrl } from '../lib/github'
 
 export function azure () {
-  return listGitHubFiles('Azure', 'azure-rest-api-specs', '**/swagger/*.json')
+  return listGitHubFilesAsync('Azure', 'azure-rest-api-specs', '**/swagger/*.json')
     .then(files => files.filter(f => (f.split('/').length === 4)).map(filename => {
       // Workaround for https://github.com/Azure/azure-rest-api-specs/issues/229
       let service = filename.split('/')[0]
