@@ -100,7 +100,6 @@ const test = () => {
 
   if (!argv.noLog) {
     pipe = pipe
-      .pipe($('warnings')).pipe(_('.log/warnings'))
       .pipe($('fatal')).pipe(_('.log/fatal'))
       .pipe($('validation.warnings')).pipe(_('.log/test.warnings'))
       .pipe($('validation.errors')).pipe(_('.log/test.errors'))

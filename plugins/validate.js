@@ -1,10 +1,11 @@
 import { getSource } from '../lib/spec/getMeta'
 import { postValidation } from '../lib/spec'
-import {runValidate, validatePreferred} from '../lib/spec/runValidateAndFix'
+import { runValidate, validatePreferred } from '../lib/spec/runValidateAndFix'
 
 const {obj} = require('through2')
 const {obj: objConcurent} = require('through2-concurrent')
 const {log, colors} = require('gulp-util')
+const glog = require('gulplog')
 const {cpus} = require('os')
 const {createHash} = require('crypto')
 const {join, dirname} = require('path')
@@ -67,20 +68,24 @@ export function preferred () {
 
 function logResults (file) {
   if (!file.validation) {
-    return log(PLUGIN_NAME, colors.red('missing'), `${colors.grey(dirname(file.relative))}`)
+    return glog.error(PLUGIN_NAME, colors.red('missing'), `${colors.grey(dirname(file.relative))}`)
   }
 
   let msg = []
+  let type = null
 
   if (file.validation.errors) {
+    type = 'error'
     msg.push(`${colors.red('errors')} ${file.validation.errors.length}`)
   }
 
   if (file.validation.warnings) {
+    type = type || 'warn'
     msg.push(`${colors.yellow('warnings')} ${file.validation.warnings.length}`)
   }
 
   if (file.validation.info) {
+    type = type || 'info'
     msg.push(`${colors.cyan('info')} ${file.validation.info.length}`)
   }
 
@@ -88,19 +93,6 @@ function logResults (file) {
     msg.push(`${colors.green('OK')}`)
   }
 
-  log(PLUGIN_NAME, msg.join(', '), `${colors.grey(dirname(file.relative))}`)
-
-  if (file.warnings) {
-    file.warnings.forEach(w => log('warning', colors.yellow(w), `${colors.grey(dirname(file.relative))}`))
-  }
-
-  // if (!quite) {
-  //   log(PLUGIN_NAME, `${colors.grey(dirname(file.relative))}`)
-  // }
-
-  // if (file.validation.errors) {
-  //   log(PLUGIN_NAME, 'error', `${colors.red(dirname(file.relative))}`)
-  // } else {
-  //   log(PLUGIN_NAME, `${colors.blue(dirname(file.relative))}`)
-  // }
+  type = type || 'debug'
+  glog[type](PLUGIN_NAME, msg.join(', '), `${colors.grey(dirname(file.relative))}`)
 }
