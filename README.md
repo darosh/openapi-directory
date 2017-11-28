@@ -5,10 +5,10 @@
 ```text
 ├─┬ APIs
 │ └─┬ <PROVIDER>  
-│   ├─┬ [<SERVICE>]
+│   ├─┬ <SERVICE>          optional
 │   │ ├─┬ <VERSION>
-│   │ │ ├── swagger.yaml
 │   │ │ ├── fixup.yaml
+│   │ │ ├── swagger.yaml
 │   │ │ └── patch.yaml
 │   │ └── patch.yaml
 │   └── patch.yaml
