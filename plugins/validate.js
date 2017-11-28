@@ -13,7 +13,7 @@ const {readFile, writeFile} = require('fs')
 
 const PLUGIN_NAME = 'validate'
 
-export function validate ({quite, cache} = {}) {
+export function validate (cache) {
   return objConcurent({
     maxConcurrency: cpus().length * 2
   }, function (file, enc, cb) {
@@ -32,7 +32,7 @@ export function validate ({quite, cache} = {}) {
       if (err) {
         runValidate(file).then(() => {
           postValidation(file)
-          logResults(file, quite)
+          logResults(file)
           writeFile(cached, JSON.stringify(file.validation), () => {
             cb(null, file)
           })
@@ -45,7 +45,7 @@ export function validate ({quite, cache} = {}) {
           run(true)
         }
 
-        logResults(file, quite, true)
+        logResults(file)
         cb(null, file)
       }
     }
@@ -65,7 +65,7 @@ export function preferred () {
   })
 }
 
-function logResults (file, quite, cached = false) {
+function logResults (file) {
   if (!file.validation) {
     return log(PLUGIN_NAME, colors.red('missing'), `${colors.grey(dirname(file.relative))}`)
   }

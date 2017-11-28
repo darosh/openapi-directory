@@ -93,24 +93,27 @@ task('online', online())
  * Test tasks
  */
 
-const test = () => src('APIs/**/swagger.yaml')
-  .pipe(json())
-  .pipe(validate({cache: '.cache/test'}))
-  .pipe($('warnings')).pipe(_('.log/warnings'))
-  .pipe($('fatal')).pipe(_('.log/fatal'))
-  .pipe($('validation.warnings')).pipe(_('.log/test.warnings'))
-  .pipe($('validation.errors')).pipe(_('.log/test.errors'))
-  .pipe($('validation.info')).pipe(_('.log/test.info'))
-  .pipe(preferred())
-test.description = 'Validate API specifications'
-task('test', test)
+const test = () => {
+  let pipe = src('APIs/**/swagger.yaml')
+    .pipe(json())
+    .pipe(validate('.cache/test'))
 
-const test_quite = () => src('APIs/**/swagger.yaml')
-  .pipe(json())
-  .pipe(validate({quite: true, cache: '.cache/test'}))
-  .pipe(preferred())
-test_quite.description = 'Validate API specifications, summary only, no ".log/**" files'
-task('test_quite', test_quite)
+  if (!argv.noLog) {
+    pipe = pipe
+      .pipe($('warnings')).pipe(_('.log/warnings'))
+      .pipe($('fatal')).pipe(_('.log/fatal'))
+      .pipe($('validation.warnings')).pipe(_('.log/test.warnings'))
+      .pipe($('validation.errors')).pipe(_('.log/test.errors'))
+      .pipe($('validation.info')).pipe(_('.log/test.info'))
+  }
+
+  return pipe.pipe(preferred())
+}
+test.description = 'Validate API specifications'
+test.flags = {
+  '--no-log': ' do not write ".log/**" files'
+}
+task('test', test)
 
 /**
  * Spec tasks
@@ -122,7 +125,7 @@ const add = () => {
     .pipe($(loadSpec, 'spec')).pipe(_('.debug'))
     .pipe(dest('.debug'))
 }
-add.description = ''
+add.description = 'Add new definition'
 add.flags = {
   '-b --background <BACKGROUND>': ' specify background colour',
   '-d --lang <LANG>': ' specify description language',
@@ -228,6 +231,7 @@ const build_swagger = () => src('resources/apis_guru_swagger.yaml')
 task('build_swagger', build_swagger)
 
 const build = series('clean_specs', 'build_specs', 'build_index', 'build_swagger', 'build_badges')
+build.description = 'Build all'
 task('build', build)
 
 /**
@@ -249,8 +253,9 @@ const deploy = series('online', 'build', 's3')
 deploy.description = 'Build and deploy to S3'
 task('deploy', deploy)
 
-const test_and_deploy = series('test_quite', 'deploy')
+const test_and_deploy = series('test', 'deploy')
 test_and_deploy.description = 'Main CI task'
+task('test_and_deploy', test_and_deploy)
 
 /**
  * Default task
