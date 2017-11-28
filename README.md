@@ -1,9 +1,31 @@
 # OpenAPI Directory Tools
 
+## Structure
+
+```
+├─┬ APIs
+│ └─┬ <PROVIDER>  
+│   ├─┬ [<SERVICE>]
+│   │ ├─┬ <VERSION>
+│   │ │ ├── swagger.yaml
+│   │ │ ├── fixup.yaml
+│   │ │ └── patch.yaml
+│   │ └── patch.yaml
+│   └── patch.yaml
+└─┬ fixes
+  └── fix
+```
+
 ## Development
 
 ```bash
 $ npm run lint
+```
+
+## Testing
+
+```bash
+odt add --url http://petstore.swagger.io/v2/swagger.json --fix --service petstore
 ```
 
 ## Refactoring Notes
