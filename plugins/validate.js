@@ -1,5 +1,6 @@
 import { getSource } from '../lib/spec/getMeta'
 import { postValidation } from '../lib/spec'
+import {runValidate, validatePreferred} from '../lib/spec/runValidateAndFix'
 
 const {obj} = require('through2')
 const {obj: objConcurent} = require('through2-concurrent')
@@ -9,7 +10,6 @@ const {createHash} = require('crypto')
 const {join, dirname} = require('path')
 const mkdirp = require('mkdirp')
 const {readFile, writeFile} = require('fs')
-const {runValidate, validatePreferred} = require('../lib/spec/runValidateAndFix')
 
 const PLUGIN_NAME = 'validate'
 

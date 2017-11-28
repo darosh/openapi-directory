@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 
+import {stringify, setCompact} from './lib/stringify'
 import { s3 as _s3 } from './tasks/s3'
 import { update as update_from_leads } from './tasks/update'
 import {
@@ -20,6 +21,7 @@ import { addSpec, loadSpec } from './lib/spec'
 import { editFile } from './lib/editFile'
 import { fixupFile } from './lib/utils'
 import { getFixup, refreshFixup } from './lib/spec/fixup'
+import {setCacheFirst, setCacheFolder} from './lib/got'
 
 const {argv} = require('yargs').alias({
   background: 'b',
@@ -37,7 +39,6 @@ const {log, colors} = require('gulp-util')
 const rename = require('gulp-rename')
 const del = require('del')
 const gif = require('gulp-if')
-const {stringify} = require('./lib/stringify')
 const {readFileSync} = require('fs')
 const _ = (d) => gif(file => !!file.contents, dest(d))
 
@@ -45,9 +46,9 @@ const _ = (d) => gif(file => !!file.contents, dest(d))
  * Configuration
  */
 
-require('./lib/got').setCacheFirst(!argv.skipCache)
-require('./lib/got').setCacheFolder('.cache')
-require('./lib/stringify').setCompact(!argv.noCompactJson)
+setCacheFirst(!argv.skipCache)
+setCacheFolder('.cache')
+setCompact(!argv.noCompactJson)
 
 /**
  * Clean tasks
@@ -225,7 +226,7 @@ const build_swagger = () => src('resources/apis_guru_swagger.yaml')
   .pipe(dest('.dist/v2'))
 task('build_swagger', build_swagger)
 
-export const build = series('clean_specs', 'build_specs', 'build_index', 'build_swagger', 'build_badges')
+const build = series('clean_specs', 'build_specs', 'build_index', 'build_swagger', 'build_badges')
 task('build', build)
 
 /**
@@ -241,23 +242,23 @@ s3.flags = {
   '--bucket <BUCKET>': '[api.apis.guru]',
   '--region <REGION>': '[us-east-1]'
 }
-task(s3)
+task('s3', s3)
 
-export const deploy = series('online', 'build', 's3')
+const deploy = series('online', 'build', 's3')
 deploy.description = 'Build and deploy to S3'
 task('deploy', deploy)
 
-export const test_and_deploy = series('test_quite', 'deploy')
+const test_and_deploy = series('test_quite', 'deploy')
 test_and_deploy.description = 'Main CI task'
 
 /**
  * Default task
  */
 
-export default function (done) {
+task('default', function (done) {
   log('Tools version', colors.cyan(require('./package.json').version))
   log('Engine version', colors.cyan(process.version))
   log('Working directory', colors.magenta(process.cwd()))
   log('Arguments', colors.magenta(stringify(argv)))
   done()
-}
+})

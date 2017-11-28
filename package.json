@@ -5,8 +5,8 @@
     "odt": "bin/odt.js"
   },
   "dependencies": {
-    "@std/esm": "^0.17.2",
     "@keyv/sqlite": "^1.2.12",
+    "@std/esm": "^0.17.2",
     "api-spec-converter": "^2.6.0",
     "bluebird": "^3.3.4",
     "concurrent-transform": "^1.0.0",
@@ -23,6 +23,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-stats": "0.0.4",
     "gulp-util": "^3.0.8",
+    "gulplog": "^1.0.0",
     "is-online": "^7.0.0",
     "js-yaml": "^3.4.3",
     "json-merge-patch": "^0.2.3",
@@ -52,7 +53,12 @@
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-promise": "^3.6.0",
-    "eslint-plugin-standard": "^3.0.1"
+    "eslint-plugin-standard": "^3.0.1",
+    "rollup": "^0.52.0",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "rollup-plugin-uglify-es": "0.0.1"
   },
   "private": true,
   "repository": {
@@ -60,7 +66,9 @@
     "url": "git://github.com/APIs-guru/openapi-directory.git"
   },
   "scripts": {
-    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter **/*.js"
+    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter **/*.js",
+    "build": "rollup -c rollup.config.js gulpfile.js --output.format cjs --output.file gulpfile.min.js",
+    "watch": "rollup --watch -c rollup.config.js gulpfile.js --output.format cjs --output.file gulpfile.min.js"
   },
   "@std/esm": {
     "esm": "js",

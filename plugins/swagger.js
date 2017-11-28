@@ -1,6 +1,7 @@
+import {stringify} from '../lib/stringify'
+
 const {obj} = require('through2')
 const {URL} = require('url')
-const {stringify} = require('../lib/stringify')
 
 export function swagger (rootUrl) {
   return obj(function (file, enc, cb) {

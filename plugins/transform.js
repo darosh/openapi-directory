@@ -1,8 +1,9 @@
+import {stringify} from '../lib/stringify'
+
 const {log, colors} = require('gulp-util')
 const {obj} = require('through2')
 const objConcurent = require('through2-concurrent').obj
 const serialize = require('serialize-error')
-const {stringify} = require('../lib/stringify')
 
 export function transform (fnc, field = null, maxConcurrency = 1) {
   if (typeof fnc === 'string') {

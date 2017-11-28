@@ -1,8 +1,9 @@
+import { sortJson } from '../lib/sortJson'
+import { stringify } from '../lib/stringify'
+
 const {obj} = require('through2')
 const {dirname} = require('path')
 const {File, log, colors} = require('gulp-util')
-const {sortJson} = require('../lib/sortJson')
-const {stringify} = require('../lib/stringify')
 
 const PLUGIN_NAME = 'api'
 

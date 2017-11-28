@@ -1,8 +1,9 @@
+import {stringify} from '../lib/stringify'
+
 const {obj} = require('through2')
 const {load} = require('js-yaml')
 const {log, colors, PluginError} = require('gulp-util')
 const {dirname} = require('path')
-const {stringify} = require('../lib/stringify')
 
 const PLUGIN_NAME = 'json'
 

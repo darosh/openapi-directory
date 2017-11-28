@@ -1,6 +1,7 @@
 import {getCache} from '../lib/cache'
 import got from '../lib/got'
-import _ from 'lodash'
+
+const _ = require('lodash')
 
 export function apitore () {
   return got('https://api.apitore.com/json/0', {json: true, cache: getCache()})
