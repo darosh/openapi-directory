@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import {stringify, setCompact} from './lib/stringify'
+import { stringify, setCompact } from './lib/stringify'
 import { s3 as _s3 } from './tasks/s3'
 import { update as update_from_leads } from './tasks/update'
 import {
@@ -21,7 +21,7 @@ import { addSpec, loadSpec } from './lib/spec'
 import { editFile } from './lib/editFile'
 import { fixupFile } from './lib/utils'
 import { getFixup, refreshFixup } from './lib/spec/fixup'
-import {setCacheFirst, setCacheFolder} from './lib/got'
+import { setCacheFirst, setCacheFolder } from './lib/got'
 
 const {argv} = require('yargs').alias({
   background: 'b',
@@ -40,6 +40,7 @@ const rename = require('gulp-rename')
 const del = require('del')
 const gif = require('gulp-if')
 const {readFileSync} = require('fs')
+const {join} = require('path')
 const _ = (d) => gif(file => !!file.contents, dest(d))
 
 /**
@@ -136,7 +137,7 @@ add.flags = {
 }
 task(add)
 
-const update_leads = update_from_leads('APIs/**/swagger.yaml')
+const update_leads = update_from_leads('APIs/**/swagger.yaml', join(__dirname, 'sources/blacklist.yaml'))
 update_leads.flags = {
   '--skip-cache': ' use "RFC compliant cache", instead of "use cache first"'
 }

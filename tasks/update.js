@@ -21,13 +21,13 @@ const rename = require('gulp-rename')
 const {log, colors} = require('gulp-util')
 const _ = (d) => require('gulp-if')(file => !!file.contents, dest(d))
 
-export function update (source) {
+export function update (source, blacklist) {
   return function () {
     log('Reading', `'${colors.cyan(source)}'`)
 
     return src(source)
       .pipe(json())
-      .pipe(leads())
+      .pipe(leads(blacklist))
       .pipe(rename({extname: '.json'}))
       .pipe($('lead')).pipe(_('.log/lead'))
       .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32)).pipe(_('.log/spec'))

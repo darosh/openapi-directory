@@ -5,7 +5,7 @@ const {obj} = require('through2')
 
 const PLUGIN_NAME = 'leads'
 
-export function leads () {
+export function leads (blacklist) {
   const specs = {}
 
   return obj(function (file, enc, cb) {
@@ -15,7 +15,7 @@ export function leads () {
   }, function (cb) {
     log(`loaded ${colors.magenta(Object.keys(specs).length)} specs`)
 
-    loadLeadsAsync(specs, {quite: true}).then(leads => {
+    loadLeadsAsync(specs, blacklist).then(leads => {
       log(`parsed ${colors.magenta(leads.length)} leads`)
 
       leads.forEach(([path, lead]) => {
