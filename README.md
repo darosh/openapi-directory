@@ -2,7 +2,7 @@
 
 ## Structure
 
-```
+<pre style="line-height: 1.2">
 ├─┬ APIs
 │ └─┬ <PROVIDER>  
 │   ├─┬ [<SERVICE>]
@@ -14,7 +14,7 @@
 │   └── patch.yaml
 └─┬ fixes
   └── fix
-```
+</pre>
 
 ## Development
 
