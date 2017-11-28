@@ -16,8 +16,22 @@ import {
   empty,
   yaml
 } from './plugins'
+import { addSpec, loadSpec } from './lib/spec'
+import { editFile } from './lib/editFile'
+import { fixupFile } from './lib/utils'
+import { getFixup, refreshFixup } from './lib/spec/fixup'
 
-const {argv} = require('yargs')
+const {argv} = require('yargs').alias({
+  background: 'b',
+  lang: 'd',
+  categories: 'c',
+  fix: 'f',
+  logo: 'l',
+  service: 's',
+  twitter: 't',
+  unofficial: 'u'
+})
+
 const {src, dest, task, series, parallel} = require('gulp')
 const {log, colors} = require('gulp-util')
 const rename = require('gulp-rename')
@@ -100,15 +114,67 @@ task('test_quite', test_quite)
  * Spec tasks
  */
 
+const add = () => {
+  argv.format = argv.format || 'swagger_2'
+  return empty(Object.assign({path: 'swagger.yaml'}, addSpec(argv)))
+    .pipe($(loadSpec, 'spec')).pipe(_('.debug'))
+    .pipe(dest('.debug'))
+}
+add.description = ''
+add.flags = {
+  '-b --background <BACKGROUND>': 'specify background colour',
+  '-d --lang <LANG>': 'specify description language',
+  '-c --categories <CATEGORIES>': 'csv list of categories',
+  '--fix': 'try to fix definition',
+  '-l --logo <LOGO>': 'specify logo url',
+  '-s --service <NAME>': 'supply service name',
+  '-t --twitter <NAME>': 'supply x-twitter account, logo not needed',
+  '-u --unofficial': 'set unofficial flag',
+  '-f --format <FORMAT>': '[swagger_2]',
+  '--url <URL>': ''
+}
+task(add)
+
 const update_leads = update_from_leads('APIs/**/swagger.yaml')
 update_leads.flags = {
-  '--skip-cache': 'Use "RFC compliant cache", instead of "use cache first"'
+  '--skip-cache': 'use "RFC compliant cache", instead of "use cache first"'
 }
 task('update_leads', update_leads)
 
 const update = series('online', 'clean_log', 'update_leads')
 update.description = 'Update specs from sources'
 task('update', update)
+
+const leads = () => {}
+leads.description = 'Add/remove definitions from 3rd-party catalogs'
+task('leads', leads)
+
+const check = () => {}
+check.description = 'Check status of x-preferred flags only'
+task('check', check)
+
+const fixup = () => src(argv.swagger)
+  .pipe(dest('.tmp'))
+  .pipe($(
+    (file) => editFile(file.path, {editor: argv.editor})
+      .then(edited => {
+        file.path = fixupFile(file.history[0])
+        file.contents = Buffer.from(getFixup(file.path, file.contents.toString(), edited))
+      })
+  ))
+  .pipe(dest('APIs'))
+fixup.description = 'Update "fixup.yaml" for specified "swagger.yaml"'
+fixup.flags = {
+  '--swagger <FILE>': 'path to "swagger.yaml"',
+  '--editor <EDITOR>': 'editor executable'
+}
+task('fixup', fixup)
+
+const refresh = () => src('APIs/**/fixup.yaml')
+  .pipe($(refreshFixup))
+  .pipe(dest('APIs'))
+refresh.description = 'Read and write back "fixup.yaml" files'
+task('refresh', refresh)
 
 /**
  * Build tasks
@@ -142,8 +208,8 @@ const build_specs = () => src('APIs/**/swagger.yaml')
   .pipe(dest('.dist/v2'))
 build_specs.description = 'Build specifications and logos'
 build_specs.flags = {
-  '--skip-git': 'Do not add "added" and "modified" dates from Git log',
-  '--no-compact-json': 'Do not use "json-stringify-pretty-compact"'
+  '--skip-git': 'do not add "added" and "modified" dates from Git log',
+  '--no-compact-json': 'do not use "json-stringify-pretty-compact"'
 }
 task(build_specs)
 
@@ -172,8 +238,8 @@ const s3 = () => _s3([['.dist/**', '']], {
 }, '.cache/s3.json')
 s3.description = 'Publish to S3'
 s3.flags = {
-  '--bucket': 'S3 bucket, default: "api.apis.guru"',
-  '--region': 'S3 region, default: "us-east-1"'
+  '--bucket <BUCKET>': '[api.apis.guru]',
+  '--region <REGION>': '[us-east-1]'
 }
 task(s3)
 

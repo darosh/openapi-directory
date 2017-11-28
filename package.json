@@ -5,10 +5,9 @@
     "odt": "bin/odt.js"
   },
   "dependencies": {
+    "@std/esm": "^0.17.2",
     "@keyv/sqlite": "^1.2.12",
     "api-spec-converter": "^2.6.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-register": "^6.26.0",
     "bluebird": "^3.3.4",
     "concurrent-transform": "^1.0.0",
     "deep-sort-object": "^1.0.1",
@@ -47,7 +46,6 @@
     "yargs": "^10.0.3"
   },
   "devDependencies": {
-    "@std/esm": "^0.17.2",
     "eslint": "^4.11.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-friendly-formatter": "^3.0.0",
@@ -62,7 +60,7 @@
     "url": "git://github.com/APIs-guru/openapi-directory.git"
   },
   "scripts": {
-    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter gulpfile.babel.js gulp/**/*.js"
+    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter **/*.js"
   },
   "@std/esm": {
     "esm": "js",
