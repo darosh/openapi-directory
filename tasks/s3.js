@@ -1,12 +1,12 @@
-const {src} = require('gulp')
-const {join, dirname} = require('path')
-const mkdirp = require('mkdirp')
-const rename = require('gulp-rename')
-const merge = require('merge-stream')
-const awspublish = require('gulp-awspublish')
-const parallelize = require('concurrent-transform')
-
 export function s3 (files, config, cacheFileName) {
+  const {src} = require('gulp')
+  const {join, dirname} = require('path')
+  const mkdirp = require('mkdirp')
+  const rename = require('gulp-rename')
+  const merge = require('merge-stream')
+  const awspublish = require('gulp-awspublish')
+  const parallelize = require('concurrent-transform')
+
   mkdirp.sync(dirname(cacheFileName))
 
   // create a new publisher using S3 options
@@ -24,11 +24,11 @@ export function s3 (files, config, cacheFileName) {
     .pipe(publisher.sync())
     .pipe(publisher.cache())
     .pipe(awspublish.reporter({states: ['delete', 'create', 'update']}))
-}
 
-function prefixWithDir (dir) {
-  return rename(path => {
-    path.dirname = join(dir, path.dirname)
-    return path
-  })
+  function prefixWithDir (dir) {
+    return rename(path => {
+      path.dirname = join(dir, path.dirname)
+      return path
+    })
+  }
 }

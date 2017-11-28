@@ -123,22 +123,22 @@ const add = () => {
 }
 add.description = ''
 add.flags = {
-  '-b --background <BACKGROUND>': 'specify background colour',
-  '-d --lang <LANG>': 'specify description language',
-  '-c --categories <CATEGORIES>': 'csv list of categories',
-  '--fix': 'try to fix definition',
-  '-l --logo <LOGO>': 'specify logo url',
-  '-s --service <NAME>': 'supply service name',
-  '-t --twitter <NAME>': 'supply x-twitter account, logo not needed',
-  '-u --unofficial': 'set unofficial flag',
-  '-f --format <FORMAT>': '[swagger_2]',
-  '--url <URL>': ''
+  '-b --background <BACKGROUND>': ' specify background colour',
+  '-d --lang <LANG>': ' specify description language',
+  '-c --categories <CATEGORIES>': ' csv list of categories',
+  '--fix': ' try to fix definition',
+  '-l --logo <LOGO>': ' specify logo url',
+  '-s --service <NAME>': ' supply service name',
+  '-t --twitter <NAME>': ' supply x-twitter account, logo not needed',
+  '-u --unofficial': ' set unofficial flag',
+  '-f --format <FORMAT>': ' [swagger_2]',
+  '--url <URL>': ' spec URL'
 }
 task(add)
 
 const update_leads = update_from_leads('APIs/**/swagger.yaml')
 update_leads.flags = {
-  '--skip-cache': 'use "RFC compliant cache", instead of "use cache first"'
+  '--skip-cache': ' use "RFC compliant cache", instead of "use cache first"'
 }
 task('update_leads', update_leads)
 
@@ -166,8 +166,8 @@ const fixup = () => src(argv.swagger)
   .pipe(dest('APIs'))
 fixup.description = 'Update "fixup.yaml" for specified "swagger.yaml"'
 fixup.flags = {
-  '--swagger <FILE>': 'path to "swagger.yaml"',
-  '--editor <EDITOR>': 'editor executable'
+  '--swagger <FILE>': ' path to "swagger.yaml"',
+  '--editor <EDITOR>': ' editor executable'
 }
 task('fixup', fixup)
 
@@ -209,8 +209,8 @@ const build_specs = () => src('APIs/**/swagger.yaml')
   .pipe(dest('.dist/v2'))
 build_specs.description = 'Build specifications and logos'
 build_specs.flags = {
-  '--skip-git': 'do not add "added" and "modified" dates from Git log',
-  '--no-compact-json': 'do not use "json-stringify-pretty-compact"'
+  '--skip-git': ' do not add "added" and "modified" dates from Git log',
+  '--no-compact-json': ' do not use "json-stringify-pretty-compact"'
 }
 task(build_specs)
 
@@ -239,8 +239,8 @@ const s3 = () => _s3([['.dist/**', '']], {
 }, '.cache/s3.json')
 s3.description = 'Publish to S3'
 s3.flags = {
-  '--bucket <BUCKET>': '[api.apis.guru]',
-  '--region <REGION>': '[us-east-1]'
+  '--bucket <BUCKET>': ' [api.apis.guru]',
+  '--region <REGION>': ' [us-east-1]'
 }
 task('s3', s3)
 

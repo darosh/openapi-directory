@@ -12,7 +12,7 @@ if (!existsSync(join(__dirname, '..', file))) {
 if (process.argv.length === 2) {
   process.argv.push('-T')
   process.argv.push('--depth')
-  process.argv.push('3')
+  process.argv.push('0')
 }
 
 process.argv.push('--cwd')
