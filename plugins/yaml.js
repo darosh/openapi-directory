@@ -1,11 +1,12 @@
 const {obj} = require('through2')
-const {dump} = require('js-yaml')
 const {log, colors} = require('gulp-util')
 const {dirname} = require('path')
 
 const PLUGIN_NAME = 'yaml'
 
 export function yaml ({verbose} = {}) {
+  const {dump} = require('js-yaml')
+
   return obj(function (file, enc, cb) {
     if (file.yaml) {
       file.contents = file.yaml

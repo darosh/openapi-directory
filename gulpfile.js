@@ -40,7 +40,7 @@ const rename = require('gulp-rename')
 const del = require('del')
 const gif = require('gulp-if')
 const {readFileSync} = require('fs')
-const {join} = require('path')
+const {join, dirname, basename} = require('path')
 const _ = (d) => gif(file => !!file.contents, dest(d))
 
 /**
@@ -265,5 +265,11 @@ task('default', function (done) {
   log('Engine version', colors.cyan(process.version))
   log('Working directory', colors.magenta(process.cwd()))
   log('Arguments', colors.magenta(stringify(argv)))
+  log('Modules', Object.keys(require.cache).map(d => colors.magenta(basename(dirname(d)))).reduce((r, d) => {
+    if (r.indexOf(d) === -1) {
+      r.push(d)
+    }
+    return r
+  }, []).sort().join(', '))
   done()
 })

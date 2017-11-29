@@ -1,13 +1,14 @@
 import {stringify} from '../lib/stringify'
 
 const {obj} = require('through2')
-const {load} = require('js-yaml')
 const {log, colors, PluginError} = require('gulp-util')
 const {dirname} = require('path')
 
 const PLUGIN_NAME = 'json'
 
 export function json ({verbose} = {}) {
+  const {load} = require('js-yaml')
+
   return obj(function (file, enc, cb) {
     if (verbose) {
       log(PLUGIN_NAME, colors.grey(dirname(file.relative)))

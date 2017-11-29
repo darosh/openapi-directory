@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "@keyv/sqlite": "^1.2.12",
-    "@std/esm": "^0.17.2",
+    "@std/esm": "^0.17.3",
     "api-spec-converter": "^2.6.0",
     "bluebird": "^3.3.4",
     "concurrent-transform": "^1.0.0",
@@ -44,7 +44,7 @@
     "tar-stream": "^1.5.5",
     "through2": "^2.0.3",
     "through2-concurrent": "^1.1.1",
-    "yargs": "^10.0.3"
+    "yargs": "^3.28.0"
   },
   "devDependencies": {
     "eslint": "^4.11.0",
