@@ -118,6 +118,12 @@ task('test', test)
  * Spec tasks
  */
 
+const urls = () => src('APIs/**/swagger.yaml')
+  .pipe(json())
+  .pipe($(file => {console.log(file.json.info['x-origin'].pop().url)}))
+urls.description = 'Show source url for definitions'
+task(urls)
+
 const add = () => {
   argv.format = argv.format || 'swagger_2'
   return empty(Object.assign({path: 'swagger.yaml'}, addSpec(argv)))
