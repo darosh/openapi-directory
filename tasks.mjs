@@ -260,7 +260,7 @@ task('test_and_deploy', test_and_deploy)
  * Default task
  */
 
-task('default', function (done) {
+function _default (done) {
   log('Tools version', colors.cyan(require('./package.json').version))
   log('Engine version', colors.cyan(process.version))
   log('Working directory', colors.magenta(process.cwd()))
@@ -279,4 +279,11 @@ task('default', function (done) {
   }
 
   done()
-})
+}
+
+_default.description = 'Show versions'
+_default.flags = {
+  '--modules': ' show loaded modules',
+  '--arguments': ' show parsed arguments'
+}
+task('default', _default)
