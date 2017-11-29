@@ -1,6 +1,7 @@
-import {stringify} from '../lib/stringify'
+import { stringify } from '../lib/stringify'
 
-const {log, colors} = require('gulp-util')
+const {colors} = require('gulp-util')
+const glog = require('gulplog')
 const {obj} = require('through2')
 const objConcurent = require('through2-concurrent').obj
 const serialize = require('serialize-error')
@@ -44,7 +45,7 @@ export function transform (fnc, field = null, maxConcurrency = 1) {
 
   function failed (file, error, enc, cb) {
     if (!file.fatal) {
-      log(`[${colors.red('error')}]`, colors.red(error.message), file.relative)
+      glog.error(`[${colors.red('error')}]`, colors.red(error.message), file.relative)
     }
 
     file.fatal = file.fatal || []

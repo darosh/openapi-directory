@@ -1,6 +1,6 @@
 {
   "name": "openapi-directory-tools",
-  "version": "0.1.0-scripts-alpha-2",
+  "version": "0.1.0-scripts-alpha-3",
   "bin": {
     "odt": "bin/odt.js"
   },
@@ -32,7 +32,7 @@
     "jsondiffpatch": "^0.2.5",
     "jsonpath": "^1.0.0",
     "keyv": "^3.0.0",
-    "lodash": "^4.6.1",
+    "lodash": "^4.17.4",
     "merge-stream": "^1.0.0",
     "mime-db": "^1.19.0",
     "mime-lookup": "0.0.2",
@@ -66,9 +66,9 @@
     "url": "git://github.com/APIs-guru/openapi-directory.git"
   },
   "scripts": {
-    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter **/*.js",
-    "build": "rollup -c rollup.config.js gulpfile.js --output.format cjs --output.file gulpfile.min.js",
-    "watch": "rollup --watch -c rollup.config.js gulpfile.js --output.format cjs --output.file gulpfile.min.js"
+    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter bin/*.js lib/**/*.js plugins/**/*.js sources/**/*.js tasks/**/*.js gulpfile.babel.js",
+    "build": "rollup -c rollup.config.js tasks.mjs --output.format cjs --output.file tasks.js",
+    "watch": "rollup --watch -c rollup.config.js tasks.mjs --output.format cjs --output.file tasks.js"
   },
   "@std/esm": {
     "esm": "js",

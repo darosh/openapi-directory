@@ -76,17 +76,17 @@ function logResults (file) {
 
   if (file.validation.errors) {
     type = 'error'
-    msg.push(`${colors.red('errors')} ${file.validation.errors.length}`)
+    msg.push(`${colors.red('errors')} ${colors.bold(file.validation.errors.length)}`)
   }
 
   if (file.validation.warnings) {
     type = type || 'warn'
-    msg.push(`${colors.yellow('warnings')} ${file.validation.warnings.length}`)
+    msg.push(`${colors.yellow('warnings')} ${colors.bold(file.validation.warnings.length)}`)
   }
 
   if (file.validation.info) {
     type = type || 'info'
-    msg.push(`${colors.cyan('info')} ${file.validation.info.length}`)
+    msg.push(`${colors.cyan('info')} ${colors.bold(file.validation.info.length)}`)
   }
 
   if (!msg.length) {
@@ -94,5 +94,5 @@ function logResults (file) {
   }
 
   type = type || 'debug'
-  glog[type](PLUGIN_NAME, msg.join(', '), `${colors.grey(dirname(file.relative))}`)
+  glog[type](PLUGIN_NAME, msg.join(', '), `${dirname(file.relative)}`)
 }

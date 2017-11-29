@@ -3,12 +3,12 @@ import commonjs from 'rollup-plugin-commonjs'
 import uglify from 'rollup-plugin-uglify-es'
 
 export default {
-  extend: true,
   plugins: [
     resolve(),
-    commonjs(
-      {exclude: ['node_modules/**']}
-    ),
+    commonjs({
+      include: 'node_modules/**',
+      sourceMap: false
+    }),
     uglify()
   ]
 }
