@@ -24,9 +24,10 @@ import { getFixup, refreshFixup } from './lib/spec/fixup'
 import { setCacheFirst, setCacheFolder } from './lib/got'
 
 const {argv} = require('yargs').alias({
+  apis: 'a',
   background: 'b',
-  lang: 'd',
   categories: 'c',
+  lang: 'd',
   fix: 'f',
   logo: 'l',
   service: 's',
