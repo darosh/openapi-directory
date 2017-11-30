@@ -51,6 +51,7 @@ const defaults = {
   apis: 'APIs/**/swagger.yaml',
   base: 'APIs',
   bucket: 'api.apis.guru',
+  fixups: 'APIs/**/fixup.yaml',
   format: 'swagger_2',
   region: 'us-east-1'
 }
@@ -190,7 +191,7 @@ const update_leads = () => {
     .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(L('.logs/fixup'))
     .pipe($(applyFixup, 'spec')).pipe(L('.logs/fixed'))
     .pipe($(convertToSwagger, 'swagger')).pipe(L('.logs/convert'))
-    .pipe($(addPatch('APIs'), 'patch', 8)).pipe(L('.logs/patch'))
+    .pipe($(addPatch(argv.base), 'patch', 8)).pipe(L('.logs/patch'))
     .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(L('.logs/swaggerFixup'))
 
     .pipe($(patchSwagger, 'swagger'))
@@ -201,7 +202,7 @@ const update_leads = () => {
     .pipe(L('.logs/patched'))
 
     .pipe($(runValidateAndFix, 'validation')).pipe(L('.logs/validation'))
-    .pipe($(postValidation, 'swagger')).pipe(_('.updated'))
+    .pipe($(postValidation, 'swagger')).pipe(_(argv.base))
 
     .pipe($('warnings')).pipe(L('.logs/warnings'))
     .pipe($('fatal')).pipe(L('.logs/fatal'))
@@ -230,7 +231,7 @@ const check = () => {}
 check.description = 'Check status of x-preferred flags only'
 task('check', check)
 
-const fixup = () => src(argv.swagger)
+const fixup = () => src(argv.swagger, {base: argv.base})
   .pipe(dest('.tmp'))
   .pipe($(
     (file) => editFile(file.path, {editor: argv.editor})
@@ -239,7 +240,7 @@ const fixup = () => src(argv.swagger)
         file.contents = Buffer.from(getFixup(file.path, file.contents.toString(), edited))
       })
   ))
-  .pipe(dest('APIs'))
+  .pipe(dest(argv.base))
 fixup.description = 'Update "fixup.yaml" for specified "swagger.yaml"'
 fixup.flags = {
   '--swagger <FILE>': ' path to "swagger.yaml"',
@@ -247,9 +248,9 @@ fixup.flags = {
 }
 task('fixup', fixup)
 
-const refresh = () => src('APIs/**/fixup.yaml')
+const refresh = () => src(argv.fixups, {base: argv.base})
   .pipe($(refreshFixup))
-  .pipe(dest('APIs'))
+  .pipe(dest(argv.base))
 refresh.description = 'Read and write back "fixup.yaml" files'
 task('refresh', refresh)
 
