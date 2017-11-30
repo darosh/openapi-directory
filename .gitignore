@@ -1,7 +1,8 @@
 # Temp folders
 .cache
 .dist
-.log
+.logs
+.tmp
 
 # Dependency directory
 node_modules
