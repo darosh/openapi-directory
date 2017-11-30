@@ -44,7 +44,7 @@
     "tar-stream": "^1.5.5",
     "through2": "^2.0.3",
     "through2-concurrent": "^1.1.1",
-    "yargs": "^3.28.0"
+    "yargs": "^10.0.3"
   },
   "devDependencies": {
     "eslint": "^4.12.1",

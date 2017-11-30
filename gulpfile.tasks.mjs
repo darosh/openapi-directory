@@ -10,6 +10,7 @@ import {
   empty,
   git,
   json,
+  leads as _leads,
   logo,
   online,
   preferred,
@@ -45,27 +46,37 @@ const del = require('del')
 const gif = require('gulp-if')
 const {readFileSync} = require('fs')
 const {join, basename} = require('path')
-const _ = (d) => gif(file => !!file.contents, dest(d))
 
-const {argv} = require('yargs').alias({
-  apis: 'a',
-  background: 'b',
-  categories: 'c',
-  lang: 'd',
-  fix: 'f',
-  logo: 'l',
-  service: 's',
-  twitter: 't',
-  unofficial: 'u'
-})
+const {argv} = require('yargs')
+  .alias({
+    apis: 'a',
+    background: 'b',
+    categories: 'c',
+    lang: 'd',
+    fix: 'f',
+    logo: 'l',
+    service: 's',
+    twitter: 't',
+    unofficial: 'u'
+  })
+  .default('bucket', 'api.apis.guru')
+  .default('cache', true)
+  .default('compact', true)
+  .default('format', 'swagger_2')
+  .default('git', true)
+  .default('logs', true)
+  .default('region', 'us-east-1')
+
+const _ = (d) => gif(file => !!file.contents, dest(d))
+const L = (d) => gif(file => argv.logs && !!file.contents, dest(d))
 
 /**
  * Configuration
  */
 
-setCacheFirst(!argv.skipCache)
+setCacheFirst(!argv.cache)
 setCacheFolder('.cache')
-setCompact(!argv.noCompactJson)
+setCompact(argv.compact)
 
 /**
  * Clean tasks
@@ -79,8 +90,8 @@ const clean_dist = () => del(['.dist'])
 clean_dist.description = 'Delete ".dist" folder'
 task('clean_dist', clean_dist)
 
-const clean_log = () => del(['.log'])
-clean_log.description = 'Delete ".log" folder'
+const clean_log = () => del(['.logs'])
+clean_log.description = 'Delete ".logs" folder'
 task('clean_log', clean_log)
 
 const clean_http = () => del(['.cache/http', '.cache/https', '.cache/http.db'])
@@ -109,24 +120,17 @@ task('online', online())
  * Test tasks
  */
 
-const test = () => {
-  let pipe = src('APIs/**/swagger.yaml')
-    .pipe(json())
-    .pipe(validate('.cache/test'))
-
-  if (!argv.noLog) {
-    pipe = pipe
-      .pipe($('fatal')).pipe(_('.log/fatal'))
-      .pipe($('validation.warnings')).pipe(_('.log/test.warnings'))
-      .pipe($('validation.errors')).pipe(_('.log/test.errors'))
-      .pipe($('validation.info')).pipe(_('.log/test.info'))
-  }
-
-  return pipe.pipe(preferred())
-}
+const test = () => src('APIs/**/swagger.yaml')
+  .pipe(json())
+  .pipe(validate('.cache/test'))
+  .pipe($('fatal')).pipe(L('.logs/fatal'))
+  .pipe($('validation.warnings')).pipe(L('.logs/test.warnings'))
+  .pipe($('validation.errors')).pipe(L('.logs/test.errors'))
+  .pipe($('validation.info')).pipe(L('.logs/test.info'))
+  .pipe(preferred())
 test.description = 'Validate API specifications'
 test.flags = {
-  '--no-log': ' do not write ".log/**" files'
+  '--no-logs': ' do not write ".logs/**" files'
 }
 task('test', test)
 
@@ -136,16 +140,13 @@ task('test', test)
 
 const urls = () => src('APIs/**/swagger.yaml')
   .pipe(json())
-  .pipe($(file => { console.log(file.json.info['x-origin'].pop().url) }))
+  .pipe($(file => { console.logs(file.json.info['x-origin'].pop().url) }))
 urls.description = 'Show source url for definitions'
 task(urls)
 
-const add = () => {
-  argv.format = argv.format || 'swagger_2'
-  return empty(Object.assign({path: 'swagger.yaml'}, addSpec(argv)))
-    .pipe($(loadSpec, 'spec')).pipe(_('.debug'))
-    .pipe(dest('.debug'))
-}
+const add = () => empty(Object.assign({path: 'swagger.yaml'}, addSpec(argv)))
+  .pipe($(loadSpec, 'spec')).pipe(_('.debug'))
+  .pipe(dest('.debug'))
 add.description = 'Add new definition'
 add.flags = {
   '-b --background <BACKGROUND>': ' specify background colour',
@@ -167,41 +168,46 @@ export function update_from_leads (source, blacklist) {
 
     return src(source)
       .pipe(json())
-      .pipe(leads(blacklist))
+      .pipe(_leads(blacklist))
       .pipe(rename({extname: '.json'}))
-      .pipe($('lead')).pipe(_('.log/lead'))
-      .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32)).pipe(_('.log/spec'))
-      .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(_('.log/fixup'))
-      .pipe($(applyFixup, 'spec')).pipe(_('.log/fixed'))
-      .pipe($(convertToSwagger, 'swagger')).pipe(_('.log/convert'))
-      .pipe($(addPatch('APIs'), 'patch', 8)).pipe(_('.log/patch'))
-      .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(_('.log/swaggerFixup'))
+      .pipe(L($('lead')).pipe(_('.logs/lead')))
+      .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32))
+      .pipe(L(_('.logs/spec')))
+      .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(L(_('.logs/fixup')))
+      .pipe($(applyFixup, 'spec')).pipe(L(_('.logs/fixed')))
+      .pipe($(convertToSwagger, 'swagger')).pipe(L(_('.logs/convert')))
+      .pipe($(addPatch('APIs'), 'patch', 8)).pipe(L(_('.logs/patch')))
+      .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(L(_('.logs/swaggerFixup')))
 
       .pipe($(patchSwagger, 'swagger'))
       .pipe($(expandPathTemplates, 'swagger'))
       .pipe($(replaceSpacesInSchemaNames, 'swagger'))
       .pipe($(extractApiKeysFromParameters, 'swagger'))
       .pipe($(simplifyProduceConsume, 'swagger'))
-      .pipe(_('.log/patched'))
+      .pipe(L(_('.logs/patched')))
 
-      .pipe($(runValidateAndFix, 'validation')).pipe(_('.log/validation'))
-      .pipe($(postValidation, 'swagger')).pipe(_('.log/updated'))
-      .pipe($('warnings')).pipe(_('.log/warnings'))
-      .pipe($('fatal')).pipe(_('.log/fatal'))
-      .pipe($('validation.warnings')).pipe(_('.log/validation.warnings'))
-      .pipe($('validation.errors')).pipe(_('.log/validation.errors'))
-      .pipe($('validation.info')).pipe(_('.log/validation.info'))
+      .pipe($(runValidateAndFix, 'validation')).pipe(L(_('.logs/validation')))
+      .pipe($(postValidation, 'swagger')).pipe(_('.updated'))
+
+      .pipe(L($('warnings')).pipe(_('.logs/warnings')))
+      .pipe(L($('fatal')).pipe(_('.logs/fatal')))
+      .pipe(L($('validation.warnings')).pipe(_('.logs/validation.warnings')))
+      .pipe(L($('validation.errors')).pipe(_('.logs/validation.errors')))
+      .pipe(L($('validation.info')).pipe(_('.logs/validation.info')))
   }
 }
 
 const update_leads = update_from_leads('APIs/**/swagger.yaml', join(__dirname, 'sources/blacklist.yaml'))
 update_leads.flags = {
-  '--skip-cache': ' use "RFC compliant cache", instead of "use cache first"'
+  '--no-cache': ' use "RFC compliant cache", instead of "use cache first"'
 }
 task('update_leads', update_leads)
 
 const update = series('online', 'clean_log', 'update_leads')
 update.description = 'Update specs from sources'
+update.flags = {
+  '--no-logs': ' do not write ".logs/**" files'
+}
 task('update', update)
 
 const leads = () => {}
@@ -255,7 +261,7 @@ task('build_badges', build_badges)
 const build_specs = () => src('APIs/**/swagger.yaml')
   .pipe(json()) // stores 'contents' in 'yaml', adds 'json', converts to JSON
   .pipe(logo('.dist/v2/cache/logo')) // adds 'logo'
-  .pipe(gif(!argv.skipGit, git())) // adds 'dates'
+  .pipe(gif(argv.git, git())) // adds 'dates'
   .pipe(api('https://api.apis.guru/v2/cache/logo/')) // modifies 'json.info'
   .pipe(rename({extname: '.json'}))
   .pipe($('json'))
@@ -267,8 +273,8 @@ const build_specs = () => src('APIs/**/swagger.yaml')
   .pipe(dest('.dist/v2'))
 build_specs.description = 'Build specifications and logos'
 build_specs.flags = {
-  '--skip-git': ' do not add "added" and "modified" dates from Git log',
-  '--no-compact-json': ' do not use "json-stringify-pretty-compact"'
+  '--no-git': ' do not add "added" and "modified" dates from Git log',
+  '--no-compact': ' do not use "json-stringify-pretty-compact"'
 }
 task('build_specs', build_specs)
 
@@ -293,8 +299,8 @@ task('build', build)
  */
 
 const s3 = () => _s3([['.dist/**', '']], {
-  region: argv.region || 'us-east-1',
-  params: {Bucket: argv.bucket || 'api.apis.guru'}
+  region: argv.region,
+  params: {Bucket: argv.bucket}
 }, '.cache/s3.json')
 s3.description = 'Publish to S3'
 s3.flags = {
