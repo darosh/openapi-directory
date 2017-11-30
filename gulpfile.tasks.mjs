@@ -1,27 +1,51 @@
 /* eslint-disable camelcase */
 
-import { stringify, setCompact } from './lib/stringify'
 import { s3 as _s3 } from './tasks/s3'
-import { update as update_from_leads } from './tasks/update'
+import { stringify, setCompact, editFile, setCacheFirst, setCacheFolder } from './lib'
+import { fixupFile } from './lib/utils'
 import {
   api,
   apis,
   badge,
+  empty,
   git,
   json,
-  logo, online,
+  logo,
+  online,
   preferred,
   swagger,
   transform as $,
   validate,
-  empty,
   yaml
 } from './plugins'
-import { addSpec, loadSpec } from './lib/spec'
-import { editFile } from './lib/editFile'
-import { fixupFile } from './lib/utils'
-import { getFixup, refreshFixup } from './lib/spec/fixup'
-import { setCacheFirst, setCacheFolder } from './lib/got'
+import {
+  getFixup,
+  refreshFixup,
+  addSpec,
+  addFixes,
+  addPatch,
+  addSwaggerFixup,
+  applyFixup,
+  convertToSwagger,
+  expandPathTemplates,
+  extractApiKeysFromParameters,
+  getMeta,
+  loadSpec,
+  patchSwagger,
+  postValidation,
+  replaceSpacesInSchemaNames,
+  runValidateAndFix,
+  simplifyProduceConsume
+} from './lib/spec'
+
+const {src, dest, task, series, parallel} = require('gulp')
+const {log, colors} = require('gulp-util')
+const rename = require('gulp-rename')
+const del = require('del')
+const gif = require('gulp-if')
+const {readFileSync} = require('fs')
+const {join, basename} = require('path')
+const _ = (d) => gif(file => !!file.contents, dest(d))
 
 const {argv} = require('yargs').alias({
   apis: 'a',
@@ -34,15 +58,6 @@ const {argv} = require('yargs').alias({
   twitter: 't',
   unofficial: 'u'
 })
-
-const {src, dest, task, series, parallel} = require('gulp')
-const {log, colors} = require('gulp-util')
-const rename = require('gulp-rename')
-const del = require('del')
-const gif = require('gulp-if')
-const {readFileSync} = require('fs')
-const {join, dirname, basename} = require('path')
-const _ = (d) => gif(file => !!file.contents, dest(d))
 
 /**
  * Configuration
@@ -121,7 +136,7 @@ task('test', test)
 
 const urls = () => src('APIs/**/swagger.yaml')
   .pipe(json())
-  .pipe($(file => {console.log(file.json.info['x-origin'].pop().url)}))
+  .pipe($(file => { console.log(file.json.info['x-origin'].pop().url) }))
 urls.description = 'Show source url for definitions'
 task(urls)
 
@@ -145,6 +160,39 @@ add.flags = {
   '--url <URL>': ' spec URL'
 }
 task(add)
+
+export function update_from_leads (source, blacklist) {
+  return function () {
+    log('Reading', `'${colors.cyan(source)}'`)
+
+    return src(source)
+      .pipe(json())
+      .pipe(leads(blacklist))
+      .pipe(rename({extname: '.json'}))
+      .pipe($('lead')).pipe(_('.log/lead'))
+      .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32)).pipe(_('.log/spec'))
+      .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(_('.log/fixup'))
+      .pipe($(applyFixup, 'spec')).pipe(_('.log/fixed'))
+      .pipe($(convertToSwagger, 'swagger')).pipe(_('.log/convert'))
+      .pipe($(addPatch('APIs'), 'patch', 8)).pipe(_('.log/patch'))
+      .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(_('.log/swaggerFixup'))
+
+      .pipe($(patchSwagger, 'swagger'))
+      .pipe($(expandPathTemplates, 'swagger'))
+      .pipe($(replaceSpacesInSchemaNames, 'swagger'))
+      .pipe($(extractApiKeysFromParameters, 'swagger'))
+      .pipe($(simplifyProduceConsume, 'swagger'))
+      .pipe(_('.log/patched'))
+
+      .pipe($(runValidateAndFix, 'validation')).pipe(_('.log/validation'))
+      .pipe($(postValidation, 'swagger')).pipe(_('.log/updated'))
+      .pipe($('warnings')).pipe(_('.log/warnings'))
+      .pipe($('fatal')).pipe(_('.log/fatal'))
+      .pipe($('validation.warnings')).pipe(_('.log/validation.warnings'))
+      .pipe($('validation.errors')).pipe(_('.log/validation.errors'))
+      .pipe($('validation.info')).pipe(_('.log/validation.info'))
+  }
+}
 
 const update_leads = update_from_leads('APIs/**/swagger.yaml', join(__dirname, 'sources/blacklist.yaml'))
 update_leads.flags = {

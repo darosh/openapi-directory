@@ -66,9 +66,9 @@
     "url": "git://github.com/APIs-guru/openapi-directory.git"
   },
   "scripts": {
-    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter bin/*.js lib/**/*.js plugins/**/*.js sources/**/*.js tasks/**/*.js gulpfile.babel.js",
-    "build": "rollup -c rollup.config.js tasks.mjs --output.format cjs --output.file tasks.js",
-    "watch": "rollup --watch -c rollup.config.js tasks.mjs --output.format cjs --output.file tasks.js"
+    "lint": "eslint --fix --format node_modules/eslint-friendly-formatter bin/*.js lib/**/*.js plugins/**/*.js sources/**/*.js tasks/**/*.js gulpfile.js gulpfile.tasks.mjs",
+    "build": "rollup -c rollup.config.js gulpfile.tasks.mjs --output.format cjs --output.file gulpfile.tasks.js",
+    "watch": "rollup -c rollup.config.js gulpfile.tasks.mjs --output.format cjs --output.file gulpfile.tasks.js --watch"
   },
   "@std/esm": {
     "esm": "js",

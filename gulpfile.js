@@ -1,11 +1,11 @@
 const {join} = require('path')
 const {existsSync} = require('fs')
 
-let file = './tasks.js'
+let file = './gulpfile.tasks.js'
 
 if (!existsSync(join(__dirname, file))) {
   require = require('@std/esm')(module, true) // eslint-disable-line no-global-assign
-  file = './tasks.mjs'
+  file = './gulpfile.tasks.mjs'
 }
 
 require(file)
