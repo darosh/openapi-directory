@@ -1,6 +1,7 @@
 import { loadLeadsAsync } from '../lib/loadLeadsAsync'
 
 const {log, colors, File, PluginError} = require('gulp-util')
+const glog = require('gulplog')
 const {obj} = require('through2')
 
 const PLUGIN_NAME = 'leads'
@@ -9,7 +10,7 @@ export function leads (blacklist) {
   const specs = {}
 
   return obj(function (file, enc, cb) {
-    // log(PLUGIN_NAME, `${colors.cyan(dirname(file.relative))}`)
+    glog.debug(PLUGIN_NAME, `${colors.yellow(file.relative)}`)
     specs[file.relative.replace(/\\/g, '/')] = file.json
     cb()
   }, function (cb) {
