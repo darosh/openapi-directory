@@ -47,6 +47,13 @@ const gif = require('gulp-if')
 const {readFileSync} = require('fs')
 const {join, basename} = require('path')
 
+const defaults = {
+  apis: 'APIs/**/swagger.yaml',
+  bucket: 'api.apis.guru',
+  format: 'swagger_2',
+  region: 'us-east-1'
+}
+
 const {argv} = require('yargs')
   .alias({
     apis: 'a',
@@ -59,16 +66,18 @@ const {argv} = require('yargs')
     twitter: 't',
     unofficial: 'u'
   })
-  .default('bucket', 'api.apis.guru')
+  .default('apis', defaults.apis)
+  .default('bucket', defaults.bucket)
   .default('cache', true)
   .default('compact', true)
-  .default('format', 'swagger_2')
+  .default('format', defaults.format)
   .default('git', true)
   .default('logs', true)
-  .default('region', 'us-east-1')
+  .default('region', defaults.region)
 
 const _ = (d) => gif(file => !!file.contents, dest(d))
 const L = (d) => gif(file => argv.logs && !!file.contents, dest(d))
+const D = (d) => `[${colors.bold(d)}]`
 
 /**
  * Configuration
@@ -120,7 +129,7 @@ task('online', online())
  * Test tasks
  */
 
-const test = () => src('APIs/**/swagger.yaml')
+const test = () => src(argv.apis)
   .pipe(json())
   .pipe(validate('.cache/test'))
   .pipe($('fatal')).pipe(L('.logs/fatal'))
@@ -130,6 +139,7 @@ const test = () => src('APIs/**/swagger.yaml')
   .pipe(preferred())
 test.description = 'Validate API specifications'
 test.flags = {
+  '-a --apis': ` ${D(defaults.apis)}`,
   '--no-logs': ' do not write ".logs/**" files'
 }
 task('test', test)
@@ -138,10 +148,13 @@ task('test', test)
  * Spec tasks
  */
 
-const urls = () => src('APIs/**/swagger.yaml')
+const urls = () => src(argv.apis)
   .pipe(json())
   .pipe($(file => { console.logs(file.json.info['x-origin'].pop().url) }))
 urls.description = 'Show source url for definitions'
+urls.flags = {
+  '-a --apis': ` ${D(defaults.apis)}`
+}
 task(urls)
 
 const add = () => empty(Object.assign({path: 'swagger.yaml'}, addSpec(argv)))
@@ -157,7 +170,7 @@ add.flags = {
   '-s --service <NAME>': ' supply service name',
   '-t --twitter <NAME>': ' supply x-twitter account, logo not needed',
   '-u --unofficial': ' set unofficial flag',
-  '-f --format <FORMAT>': ' [swagger_2]',
+  '-f --format <FORMAT>': ` ${D(defaults.format)}`,
   '--url <URL>': ' spec URL'
 }
 task(add)
@@ -170,35 +183,36 @@ export function update_from_leads (source, blacklist) {
       .pipe(json())
       .pipe(_leads(blacklist))
       .pipe(rename({extname: '.json'}))
-      .pipe(L($('lead')).pipe(_('.logs/lead')))
+      .pipe($('lead')).pipe(L('.logs/lead'))
       .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32))
-      .pipe(L(_('.logs/spec')))
-      .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(L(_('.logs/fixup')))
-      .pipe($(applyFixup, 'spec')).pipe(L(_('.logs/fixed')))
-      .pipe($(convertToSwagger, 'swagger')).pipe(L(_('.logs/convert')))
-      .pipe($(addPatch('APIs'), 'patch', 8)).pipe(L(_('.logs/patch')))
-      .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(L(_('.logs/swaggerFixup')))
+      .pipe(L('.logs/spec'))
+      .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(L('.logs/fixup'))
+      .pipe($(applyFixup, 'spec')).pipe(L('.logs/fixed'))
+      .pipe($(convertToSwagger, 'swagger')).pipe(L('.logs/convert'))
+      .pipe($(addPatch('APIs'), 'patch', 8)).pipe(L('.logs/patch'))
+      .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(L('.logs/swaggerFixup'))
 
       .pipe($(patchSwagger, 'swagger'))
       .pipe($(expandPathTemplates, 'swagger'))
       .pipe($(replaceSpacesInSchemaNames, 'swagger'))
       .pipe($(extractApiKeysFromParameters, 'swagger'))
       .pipe($(simplifyProduceConsume, 'swagger'))
-      .pipe(L(_('.logs/patched')))
+      .pipe(L('.logs/patched'))
 
-      .pipe($(runValidateAndFix, 'validation')).pipe(L(_('.logs/validation')))
+      .pipe($(runValidateAndFix, 'validation')).pipe(L('.logs/validation'))
       .pipe($(postValidation, 'swagger')).pipe(_('.updated'))
 
-      .pipe(L($('warnings')).pipe(_('.logs/warnings')))
-      .pipe(L($('fatal')).pipe(_('.logs/fatal')))
-      .pipe(L($('validation.warnings')).pipe(_('.logs/validation.warnings')))
-      .pipe(L($('validation.errors')).pipe(_('.logs/validation.errors')))
-      .pipe(L($('validation.info')).pipe(_('.logs/validation.info')))
+      .pipe($('warnings')).pipe(L('.logs/warnings'))
+      .pipe($('fatal')).pipe(L('.logs/fatal'))
+      .pipe($('validation.warnings')).pipe(L('.logs/validation.warnings'))
+      .pipe($('validation.errors')).pipe(L('.logs/validation.errors'))
+      .pipe($('validation.info')).pipe(L('.logs/validation.info'))
   }
 }
 
-const update_leads = update_from_leads('APIs/**/swagger.yaml', join(__dirname, 'sources/blacklist.yaml'))
+const update_leads = update_from_leads(argv.apis, join(__dirname, 'sources/blacklist.yaml'))
 update_leads.flags = {
+  '-a --apis': ` ${D(defaults.apis)}`,
   '--no-cache': ' use "RFC compliant cache", instead of "use cache first"'
 }
 task('update_leads', update_leads)
@@ -258,7 +272,7 @@ const build_badges = () => {
 build_badges.description = 'Download shield.io images'
 task('build_badges', build_badges)
 
-const build_specs = () => src('APIs/**/swagger.yaml')
+const build_specs = () => src(argv.apis)
   .pipe(json()) // stores 'contents' in 'yaml', adds 'json', converts to JSON
   .pipe(logo('.dist/v2/cache/logo')) // adds 'logo'
   .pipe(gif(argv.git, git())) // adds 'dates'
@@ -273,6 +287,7 @@ const build_specs = () => src('APIs/**/swagger.yaml')
   .pipe(dest('.dist/v2'))
 build_specs.description = 'Build specifications and logos'
 build_specs.flags = {
+  '-a --apis': ` ${D(defaults.apis)}`,
   '--no-git': ' do not add "added" and "modified" dates from Git log',
   '--no-compact': ' do not use "json-stringify-pretty-compact"'
 }
@@ -304,8 +319,8 @@ const s3 = () => _s3([['.dist/**', '']], {
 }, '.cache/s3.json')
 s3.description = 'Publish to S3'
 s3.flags = {
-  '--bucket <BUCKET>': ' [api.apis.guru]',
-  '--region <REGION>': ' [us-east-1]'
+  '--bucket <BUCKET>': ` ${D(defaults.bucket)}`,
+  '--region <REGION>': ` ${D(defaults.region)}`
 }
 task('s3', s3)
 
