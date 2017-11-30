@@ -49,6 +49,7 @@ const {join, basename} = require('path')
 
 const defaults = {
   apis: 'APIs/**/swagger.yaml',
+  base: 'APIs',
   bucket: 'api.apis.guru',
   format: 'swagger_2',
   region: 'us-east-1'
@@ -67,6 +68,7 @@ const {argv} = require('yargs')
     unofficial: 'u'
   })
   .default('apis', defaults.apis)
+  .default('base', defaults.base)
   .default('bucket', defaults.bucket)
   .default('cache', true)
   .default('compact', true)
@@ -129,7 +131,7 @@ task('online', online())
  * Test tasks
  */
 
-const test = () => src(argv.apis)
+const test = () => src(argv.apis, {base: argv.base})
   .pipe(json())
   .pipe(validate('.cache/test'))
   .pipe($('fatal')).pipe(L('.logs/fatal'))
@@ -148,7 +150,7 @@ task('test', test)
  * Spec tasks
  */
 
-const urls = () => src(argv.apis)
+const urls = () => src(argv.apis, {base: argv.base})
   .pipe(json())
   .pipe($(file => { console.logs(file.json.info['x-origin'].pop().url) }))
 urls.description = 'Show source url for definitions'
@@ -175,42 +177,38 @@ add.flags = {
 }
 task(add)
 
-export function update_from_leads (source, blacklist) {
-  return function () {
-    log('Reading', `'${colors.cyan(source)}'`)
+const update_leads = () => {
+  log('Reading', `'${colors.cyan(argv.apis)}'`)
 
-    return src(source)
-      .pipe(json())
-      .pipe(_leads(blacklist))
-      .pipe(rename({extname: '.json'}))
-      .pipe($('lead')).pipe(L('.logs/lead'))
-      .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32))
-      .pipe(L('.logs/spec'))
-      .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(L('.logs/fixup'))
-      .pipe($(applyFixup, 'spec')).pipe(L('.logs/fixed'))
-      .pipe($(convertToSwagger, 'swagger')).pipe(L('.logs/convert'))
-      .pipe($(addPatch('APIs'), 'patch', 8)).pipe(L('.logs/patch'))
-      .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(L('.logs/swaggerFixup'))
+  return src(argv.apis, {base: argv.base})
+    .pipe(json())
+    .pipe(_leads(join(__dirname, 'sources/blacklist.yaml')))
+    .pipe(rename({extname: '.json'}))
+    .pipe($('lead')).pipe(L('.logs/lead'))
+    .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32))
+    .pipe(L('.logs/spec'))
+    .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(L('.logs/fixup'))
+    .pipe($(applyFixup, 'spec')).pipe(L('.logs/fixed'))
+    .pipe($(convertToSwagger, 'swagger')).pipe(L('.logs/convert'))
+    .pipe($(addPatch('APIs'), 'patch', 8)).pipe(L('.logs/patch'))
+    .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(L('.logs/swaggerFixup'))
 
-      .pipe($(patchSwagger, 'swagger'))
-      .pipe($(expandPathTemplates, 'swagger'))
-      .pipe($(replaceSpacesInSchemaNames, 'swagger'))
-      .pipe($(extractApiKeysFromParameters, 'swagger'))
-      .pipe($(simplifyProduceConsume, 'swagger'))
-      .pipe(L('.logs/patched'))
+    .pipe($(patchSwagger, 'swagger'))
+    .pipe($(expandPathTemplates, 'swagger'))
+    .pipe($(replaceSpacesInSchemaNames, 'swagger'))
+    .pipe($(extractApiKeysFromParameters, 'swagger'))
+    .pipe($(simplifyProduceConsume, 'swagger'))
+    .pipe(L('.logs/patched'))
 
-      .pipe($(runValidateAndFix, 'validation')).pipe(L('.logs/validation'))
-      .pipe($(postValidation, 'swagger')).pipe(_('.updated'))
+    .pipe($(runValidateAndFix, 'validation')).pipe(L('.logs/validation'))
+    .pipe($(postValidation, 'swagger')).pipe(_('.updated'))
 
-      .pipe($('warnings')).pipe(L('.logs/warnings'))
-      .pipe($('fatal')).pipe(L('.logs/fatal'))
-      .pipe($('validation.warnings')).pipe(L('.logs/validation.warnings'))
-      .pipe($('validation.errors')).pipe(L('.logs/validation.errors'))
-      .pipe($('validation.info')).pipe(L('.logs/validation.info'))
-  }
+    .pipe($('warnings')).pipe(L('.logs/warnings'))
+    .pipe($('fatal')).pipe(L('.logs/fatal'))
+    .pipe($('validation.warnings')).pipe(L('.logs/validation.warnings'))
+    .pipe($('validation.errors')).pipe(L('.logs/validation.errors'))
+    .pipe($('validation.info')).pipe(L('.logs/validation.info'))
 }
-
-const update_leads = update_from_leads(argv.apis, join(__dirname, 'sources/blacklist.yaml'))
 update_leads.flags = {
   '-a --apis': ` ${D(defaults.apis)}`,
   '--no-cache': ' use "RFC compliant cache", instead of "use cache first"'
@@ -272,7 +270,7 @@ const build_badges = () => {
 build_badges.description = 'Download shield.io images'
 task('build_badges', build_badges)
 
-const build_specs = () => src(argv.apis)
+const build_specs = () => src(argv.apis, {base: argv.base})
   .pipe(json()) // stores 'contents' in 'yaml', adds 'json', converts to JSON
   .pipe(logo('.dist/v2/cache/logo')) // adds 'logo'
   .pipe(gif(argv.git, git())) // adds 'dates'
