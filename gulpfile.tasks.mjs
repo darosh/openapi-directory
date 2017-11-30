@@ -81,6 +81,7 @@ const {argv} = require('yargs')
 const _ = (d) => gif(file => !!file.contents, dest(d))
 const L = (d) => gif(file => argv.logs && !!file.contents, dest(d))
 const D = (d) => `[${colors.bold(d)}]`
+const B = (d) => gif(file => argv.debug && !!file.contents, dest(d))
 
 /**
  * Configuration
@@ -102,9 +103,9 @@ const clean_dist = () => del(['.dist'])
 clean_dist.description = 'Delete ".dist" folder'
 task('clean_dist', clean_dist)
 
-const clean_log = () => del(['.logs'])
-clean_log.description = 'Delete ".logs" folder'
-task('clean_log', clean_log)
+const clean_logs = () => del(['.logs'])
+clean_logs.description = 'Delete ".logs" folder'
+task('clean_logs', clean_logs)
 
 const clean_http = () => del(['.cache/http', '.cache/https', '.cache/http.db'])
 clean_http.description = 'Delete HTTP cache and stored responses'
@@ -118,7 +119,11 @@ const clean_test = () => del(['.cache/test'])
 clean_test.description = 'Delete ".cache/test" folder'
 task('clean_test', clean_test)
 
-const clean = parallel('clean_log', 'clean_cache', 'clean_dist')
+const clean_debug = () => del(['.debug'])
+clean_debug.description = 'Delete ".cache/test" folder'
+task('clean_debug', clean_debug)
+
+const clean = parallel('clean_logs', 'clean_cache', 'clean_dist', 'clean_debug')
 clean.description = 'Delete all artifact folders'
 task('clean', clean)
 
@@ -185,23 +190,23 @@ const update_leads = () => {
     .pipe(json())
     .pipe(_leads(join(__dirname, 'sources/blacklist.yaml')))
     .pipe(rename({extname: '.json'}))
-    .pipe($('lead')).pipe(L('.logs/lead'))
+    .pipe($('lead')).pipe(B('.debug/lead'))
     .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32))
-    .pipe(L('.logs/spec'))
-    .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(L('.logs/fixup'))
-    .pipe($(applyFixup, 'spec')).pipe(L('.logs/fixed'))
-    .pipe($(convertToSwagger, 'swagger')).pipe(L('.logs/convert'))
-    .pipe($(addPatch(argv.base), 'patch', 8)).pipe(L('.logs/patch'))
-    .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(L('.logs/swaggerFixup'))
+    .pipe(B('.debug/spec'))
+    .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(B('.debug/fixup'))
+    .pipe($(applyFixup, 'spec')).pipe(B('.debug/fixed'))
+    .pipe($(convertToSwagger, 'swagger')).pipe(B('.debug/convert'))
+    .pipe($(addPatch(argv.base), 'patch', 8)).pipe(B('.debug/patch'))
+    .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(B('.debug/swaggerFixup'))
 
     .pipe($(patchSwagger, 'swagger'))
     .pipe($(expandPathTemplates, 'swagger'))
     .pipe($(replaceSpacesInSchemaNames, 'swagger'))
     .pipe($(extractApiKeysFromParameters, 'swagger'))
     .pipe($(simplifyProduceConsume, 'swagger'))
-    .pipe(L('.logs/patched'))
+    .pipe(B('.debugpatched'))
 
-    .pipe($(runValidateAndFix, 'validation')).pipe(L('.logs/validation'))
+    .pipe($(runValidateAndFix, 'validation'))
     .pipe($(postValidation, 'swagger')).pipe(_(argv.base))
 
     .pipe($('warnings')).pipe(L('.logs/warnings'))
@@ -216,7 +221,7 @@ update_leads.flags = {
 }
 task('update_leads', update_leads)
 
-const update = series('online', 'clean_log', 'update_leads')
+const update = series('online', 'clean_logs', 'update_leads')
 update.description = 'Update specs from sources'
 update.flags = {
   '--no-logs': ' do not write ".logs/**" files'
