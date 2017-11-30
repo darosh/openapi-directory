@@ -16,16 +16,18 @@ export function leads (blacklist) {
   }, function (cb) {
     log(`loaded ${colors.magenta(Object.keys(specs).length)} specs`)
 
-    loadLeadsAsync(specs, blacklist).then(leads => {
-      log(`parsed ${colors.magenta(leads.length)} leads`)
+    loadLeadsAsync(specs, blacklist)
+      .then(leads => {
+        log(`parsed ${colors.magenta(leads.length)} leads`)
 
-      leads.forEach(([path, lead]) => {
-        const f = new File({path})
-        f.lead = lead
-        this.push(f)
+        leads.forEach(([path, lead]) => {
+          const f = new File({path})
+          f.lead = lead
+          this.push(f)
+        })
+
+        cb()
       })
-
-      cb()
-    }).catch(error => cb(new PluginError(PLUGIN_NAME, error.message, {error})))
+      .catch(error => cb(new PluginError(PLUGIN_NAME, error.message, {error})))
   })
 }
