@@ -74,7 +74,7 @@ const L = (d) => gif(file => argv.logs && !!file.contents, dest(d))
  * Configuration
  */
 
-setCacheFirst(!argv.cache)
+setCacheFirst(argv.cache)
 setCacheFolder('.cache')
 setCompact(argv.compact)
 
