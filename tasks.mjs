@@ -270,6 +270,8 @@ task('test_and_deploy', test_and_deploy)
 function _default (done) {
   log('Tools version', colors.cyan(require('./package.json').version))
   log('Engine version', colors.cyan(process.version))
+  log('Gulp CLI version', colors.cyan(require('gulp-cli/package.json').version))
+  log('Local Gulp version', colors.cyan(require('gulp/package.json').version))
   log('Working directory', colors.magenta(process.cwd()))
 
   if (argv.arguments) {
