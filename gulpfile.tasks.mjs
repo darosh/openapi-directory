@@ -40,6 +40,7 @@ import {
   simplifyProduceConsume
 } from './lib/spec'
 
+const {readFile} = require('fs')
 const {src, dest, task, series, parallel} = require('gulp')
 const {log, colors} = require('gulp-util')
 const rename = require('gulp-rename')
@@ -234,6 +235,19 @@ const update_leads = () => {
     .pipe(rename({extname: '.yaml'}))
     .pipe(yaml('swagger'))
     .pipe($(patch))
+    .pipe($(file => new Promise(resolve => {
+      if (file.contents) {
+        readFile(join(argv.base, file.relative), 'utf8', (err, text) => {
+          if (!err && (text.split(/\r\n|\r|\n/g).join('\n') === file.contents.toString())) {
+            log(colors.green('skipping identical contents'), colors.grey(file.relative))
+            file.contents = null
+          }
+          resolve()
+        })
+      } else {
+        resolve()
+      }
+    })))
     .pipe(O(argv.base))
 
     .pipe($('warnings')).pipe(L('.logs/warnings'))

@@ -23,7 +23,7 @@ export function yaml (field) {
     if (file.contents != null) {
       glog.debug(PLUGIN_NAME, colors.grey(file.relative))
     } else {
-      glog.warn(PLUGIN_NAME, colors.yellow('skipping'), colors.grey(file.relative))
+      glog.warn(PLUGIN_NAME, colors.yellow('skipping empty'), colors.grey(file.relative))
     }
 
     cb(null, file)
