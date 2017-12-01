@@ -85,6 +85,7 @@ const _ = (d) => gif(file => !!file.contents, dest(d))
 const L = (d) => gif(file => argv.logs && !!file.contents, dest(d))
 const bold = (d) => `[${colors.bold(d)}]`
 const D = (d) => gif(file => argv.debug && !!file.contents, dest(d))
+const O = (d) => gif(file => !!file.contents, dest(d))
 
 /**
  * Configuration
@@ -202,7 +203,7 @@ const add = () => {
       file.base = '.'
     }))
     .pipe($(patch))
-    .pipe(dest(argv.base))
+    .pipe(O(argv.base))
 }
 add.description = 'Add new definition'
 add.flags = {
@@ -230,9 +231,10 @@ const update_leads = () => {
     .pipe($(getMeta))
 
   return writeSpec(pipe)
-    .pipe(yaml('swagger')).pipe(rename({extname: '.yaml'}))
+    .pipe(rename({extname: '.yaml'}))
+    .pipe(yaml('swagger'))
     .pipe($(patch))
-    .pipe(dest(argv.base))
+    .pipe(O(argv.base))
 
     .pipe($('warnings')).pipe(L('.logs/warnings'))
     .pipe($('fatal')).pipe(L('.logs/fatal'))
@@ -270,7 +272,7 @@ const fixup = () => src(argv.swagger, {base: argv.base})
         file.contents = Buffer.from(getFixup(file.path, file.contents.toString(), edited))
       })
   ))
-  .pipe(dest(argv.base))
+  .pipe(O(argv.base))
 fixup.description = 'Update "fixup.yaml" for specified "swagger.yaml"'
 fixup.flags = {
   '--swagger <FILE>': ' path to "swagger.yaml"',
