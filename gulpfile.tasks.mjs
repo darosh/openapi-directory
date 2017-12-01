@@ -239,15 +239,17 @@ const update_leads = () => {
       if (file.contents) {
         readFile(join(argv.base, file.relative), 'utf8', (err, text) => {
           if (!err && (text.split(/\r\n|\r|\n/g).join('\n') === file.contents.toString())) {
-            log(colors.green('skipping identical contents'), colors.grey(file.relative))
+            log(colors.green('skipping identical'), colors.grey(file.relative))
             file.contents = null
+          } else if (err) {
+            log(colors.red('adding new'), colors.grey(file.relative))
           }
           resolve()
         })
       } else {
         resolve()
       }
-    })))
+    })), null, 8)
     .pipe(O(argv.base))
 
     .pipe($('warnings')).pipe(L('.logs/warnings'))

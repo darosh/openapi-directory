@@ -17,9 +17,6 @@ export function transform (fnc, field = null, maxConcurrency = 1) {
   function run (file, enc, cb) {
     let then
 
-    // file.called = 0
-    // file.fnc = fnc ? fnc.toString().substr(0, 24) : ''
-
     if (fnc && !file.fatal) {
       try {
         then = fnc.call(this, file)
@@ -42,12 +39,6 @@ export function transform (fnc, field = null, maxConcurrency = 1) {
       const f = getField(file, field)
       file.contents = f ? Buffer.from(stringify(f)) : null
     }
-
-    // file.called++
-
-    // if (file.called > 1) {
-    //   console.log(file.relative, file.fnc)
-    // }
 
     cb(null, file)
   }
