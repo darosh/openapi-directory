@@ -229,7 +229,7 @@ const update_leads = () => {
     .pipe($('lead')).pipe(D('.debug/lead'))
     .pipe($(getMeta))
 
-  writeSpec(pipe)
+  return writeSpec(pipe)
     .pipe(yaml('swagger')).pipe(rename({extname: '.yaml'}))
     .pipe($(patch))
     .pipe(dest(argv.base))
