@@ -231,7 +231,9 @@ const update_leads = () => {
 
   writeSpec(pipe)
     .pipe(yaml('swagger')).pipe(rename({extname: '.yaml'}))
-    .pipe(_(argv.base))
+    .pipe($(patch))
+    .pipe(dest(argv.base))
+
     .pipe($('warnings')).pipe(L('.logs/warnings'))
     .pipe($('fatal')).pipe(L('.logs/fatal'))
     .pipe($('validation.warnings')).pipe(L('.logs/validation.warnings'))
