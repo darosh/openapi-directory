@@ -49,6 +49,7 @@ const {join, basename} = require('path')
 
 const defaults = {
   apis: 'APIs/**/swagger.yaml',
+  background: '#FFFFFF',
   base: 'APIs',
   bucket: 'api.apis.guru',
   fixups: 'APIs/**/fixup.yaml',
@@ -69,6 +70,7 @@ const {argv} = require('yargs')
     unofficial: 'u'
   })
   .default('apis', defaults.apis)
+  .default('background', defaults.background)
   .default('base', defaults.base)
   .default('bucket', defaults.bucket)
   .default('cache', true)
@@ -80,8 +82,8 @@ const {argv} = require('yargs')
 
 const _ = (d) => gif(file => !!file.contents, dest(d))
 const L = (d) => gif(file => argv.logs && !!file.contents, dest(d))
-const D = (d) => `[${colors.bold(d)}]`
-const B = (d) => gif(file => argv.debug && !!file.contents, dest(d))
+const bold = (d) => `[${colors.bold(d)}]`
+const D = (d) => gif(file => argv.debug && !!file.contents, dest(d))
 
 /**
  * Configuration
@@ -147,10 +149,34 @@ const test = () => src(argv.apis, {base: argv.base})
   .pipe(preferred())
 test.description = 'Validate API specifications'
 test.flags = {
-  '-a --apis': ` ${D(defaults.apis)}`,
+  '-a --apis': ` ${bold(defaults.apis)}`,
   '--no-logs': ' do not write ".logs/**" files'
 }
 task('test', test)
+
+/**
+ * Spec pipes
+ */
+
+function writeSpec (pipe) {
+  return pipe.pipe($(loadSpec, 'spec', 32))
+    .pipe(D('.debug/spec'))
+    .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(D('.debug/fixup'))
+    .pipe($(applyFixup, 'spec')).pipe(D('.debug/fixed'))
+    .pipe($(convertToSwagger, 'swagger')).pipe(D('.debug/convert'))
+    .pipe($(addPatch(argv.base), 'patch', 8)).pipe(D('.debug/patch'))
+    .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(D('.debug/swaggerFixup'))
+
+    .pipe($(patchSwagger, 'swagger'))
+    .pipe($(expandPathTemplates, 'swagger'))
+    .pipe($(replaceSpacesInSchemaNames, 'swagger'))
+    .pipe($(extractApiKeysFromParameters, 'swagger'))
+    .pipe($(simplifyProduceConsume, 'swagger'))
+    .pipe(D('.debug/patched'))
+
+    .pipe($(runValidateAndFix))
+    .pipe($(postValidation))
+}
 
 /**
  * Spec tasks
@@ -161,16 +187,20 @@ const urls = () => src(argv.apis, {base: argv.base})
   .pipe($(file => { console.logs(file.json.info['x-origin'].pop().url) }))
 urls.description = 'Show source url for definitions'
 urls.flags = {
-  '-a --apis': ` ${D(defaults.apis)}`
+  '-a --apis': ` ${bold(defaults.apis)}`
 }
 task(urls)
 
-const add = () => empty(Object.assign({path: 'swagger.yaml'}, addSpec(argv)))
-  .pipe($(loadSpec, 'spec')).pipe(_('.debug'))
-  .pipe(dest('.debug'))
+const add = () => {
+  let pipe = empty(Object.assign({path: 'swagger.yaml'}, addSpec(argv)))
+    .pipe($(loadSpec, 'spec')).pipe(D('.debug'))
+
+  return writeSpec(pipe)
+    .pipe(dest(argv.base))
+}
 add.description = 'Add new definition'
 add.flags = {
-  '-b --background <BACKGROUND>': ' specify background colour',
+  '-b --background <BACKGROUND>': ` specify background colour ${bold(defaults.background)}`,
   '-d --lang <LANG>': ' specify description language',
   '-c --categories <CATEGORIES>': ' csv list of categories',
   '--fix': ' try to fix definition',
@@ -178,7 +208,7 @@ add.flags = {
   '-s --service <NAME>': ' supply service name',
   '-t --twitter <NAME>': ' supply x-twitter account, logo not needed',
   '-u --unofficial': ' set unofficial flag',
-  '-f --format <FORMAT>': ` ${D(defaults.format)}`,
+  '-f --format <FORMAT>': ` ${bold(defaults.format)}`,
   '--url <URL>': ' spec URL'
 }
 task(add)
@@ -186,29 +216,16 @@ task(add)
 const update_leads = () => {
   log('Reading', `'${colors.cyan(argv.apis)}'`)
 
-  return src(argv.apis, {base: argv.base})
+  let pipe = src(argv.apis, {base: argv.base})
     .pipe(json())
     .pipe(_leads(join(__dirname, 'sources/blacklist.yaml')))
     .pipe(rename({extname: '.json'}))
-    .pipe($('lead')).pipe(B('.debug/lead'))
-    .pipe($(getMeta)).pipe($(loadSpec, 'spec', 32))
-    .pipe(B('.debug/spec'))
-    .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(B('.debug/fixup'))
-    .pipe($(applyFixup, 'spec')).pipe(B('.debug/fixed'))
-    .pipe($(convertToSwagger, 'swagger')).pipe(B('.debug/convert'))
-    .pipe($(addPatch(argv.base), 'patch', 8)).pipe(B('.debug/patch'))
-    .pipe($(addSwaggerFixup, 'swaggerFixup', 8)).pipe(B('.debug/swaggerFixup'))
+    .pipe($('lead')).pipe(D('.debug/lead'))
+    .pipe($(getMeta))
 
-    .pipe($(patchSwagger, 'swagger'))
-    .pipe($(expandPathTemplates, 'swagger'))
-    .pipe($(replaceSpacesInSchemaNames, 'swagger'))
-    .pipe($(extractApiKeysFromParameters, 'swagger'))
-    .pipe($(simplifyProduceConsume, 'swagger'))
-    .pipe(B('.debugpatched'))
-
-    .pipe($(runValidateAndFix, 'validation'))
-    .pipe($(postValidation, 'swagger')).pipe(_(argv.base))
-
+  writeSpec(pipe)
+    .pipe(yaml('swagger')).pipe(rename({extname: '.yaml'}))
+    .pipe(_(argv.base))
     .pipe($('warnings')).pipe(L('.logs/warnings'))
     .pipe($('fatal')).pipe(L('.logs/fatal'))
     .pipe($('validation.warnings')).pipe(L('.logs/validation.warnings'))
@@ -216,7 +233,7 @@ const update_leads = () => {
     .pipe($('validation.info')).pipe(L('.logs/validation.info'))
 }
 update_leads.flags = {
-  '-a --apis': ` ${D(defaults.apis)}`,
+  '-a --apis': ` ${bold(defaults.apis)}`,
   '--no-cache': ' use "RFC compliant cache", instead of "use cache first"'
 }
 task('update_leads', update_leads)
@@ -291,7 +308,7 @@ const build_specs = () => src(argv.apis, {base: argv.base})
   .pipe(dest('.dist/v2'))
 build_specs.description = 'Build specifications and logos'
 build_specs.flags = {
-  '-a --apis': ` ${D(defaults.apis)}`,
+  '-a --apis': ` ${bold(defaults.apis)}`,
   '--no-git': ' do not add "added" and "modified" dates from Git log',
   '--no-compact': ' do not use "json-stringify-pretty-compact"'
 }
@@ -323,8 +340,8 @@ const s3 = () => _s3([['.dist/**', '']], {
 }, '.cache/s3.json')
 s3.description = 'Publish to S3'
 s3.flags = {
-  '--bucket <BUCKET>': ` ${D(defaults.bucket)}`,
-  '--region <REGION>': ` ${D(defaults.region)}`
+  '--bucket <BUCKET>': ` ${bold(defaults.bucket)}`,
+  '--region <REGION>': ` ${bold(defaults.region)}`
 }
 task('s3', s3)
 
