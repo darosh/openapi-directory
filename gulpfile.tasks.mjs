@@ -2,7 +2,7 @@
 
 import { s3 as _s3 } from './tasks/s3'
 import { stringify, setCompact, editFile, setCacheFirst, setCacheFolder } from './lib'
-import { fixupFile } from './lib/utils'
+import { fixupFile, getSwaggerPath } from './lib/utils'
 import {
   api,
   apis,
@@ -13,6 +13,7 @@ import {
   leads as _leads,
   logo,
   online,
+  patch,
   preferred,
   swagger,
   transform as $,
@@ -159,8 +160,7 @@ task('test', test)
  */
 
 function writeSpec (pipe) {
-  return pipe.pipe($(loadSpec, 'spec', 32))
-    .pipe(D('.debug/spec'))
+  return pipe.pipe($(loadSpec, 'spec', 32)).pipe(D('.debug/spec'))
     .pipe($(addFixes('fixes'), 'fixup', 8)).pipe(D('.debug/fixup'))
     .pipe($(applyFixup, 'spec')).pipe(D('.debug/fixed'))
     .pipe($(convertToSwagger, 'swagger')).pipe(D('.debug/convert'))
@@ -172,6 +172,7 @@ function writeSpec (pipe) {
     .pipe($(replaceSpacesInSchemaNames, 'swagger'))
     .pipe($(extractApiKeysFromParameters, 'swagger'))
     .pipe($(simplifyProduceConsume, 'swagger'))
+
     .pipe(D('.debug/patched'))
 
     .pipe($(runValidateAndFix))
@@ -193,9 +194,14 @@ task(urls)
 
 const add = () => {
   let pipe = empty(Object.assign({path: 'swagger.yaml'}, addSpec(argv)))
-    .pipe($(loadSpec, 'spec')).pipe(D('.debug'))
 
   return writeSpec(pipe)
+    .pipe(yaml('swagger'))
+    .pipe($(file => {
+      file.path = getSwaggerPath(file.swagger)
+      file.base = '.'
+    }))
+    .pipe($(patch))
     .pipe(dest(argv.base))
 }
 add.description = 'Add new definition'

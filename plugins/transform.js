@@ -19,7 +19,7 @@ export function transform (fnc, field = null, maxConcurrency = 1) {
 
     if (fnc && !file.fatal) {
       try {
-        then = fnc(file)
+        then = fnc.call(this, file)
       } catch (error) {
         return failed(file, error, enc, cb)
       }
