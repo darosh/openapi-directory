@@ -23,19 +23,13 @@ odt urls
 
 odt urls -LL
 
-odt add --url http://petstore.swagger.io/v2/swagger.json -s petstore
+odt add --url http://petstore.swagger.io/v2/swagger.json -s petstore -u
 ```
 
 ## Development
 
 ```bash
 $ npm run lint
-```
-
-## Testing
-
-```bash
-odt add --url http://petstore.swagger.io/v2/swagger.json --fix --service petstore
 ```
 
 ## Refactoring Notes
