@@ -26,9 +26,9 @@ export function transform (fnc, field = null, maxConcurrency = 1) {
     }
 
     if (then && then.then) {
-      then.then(() => done(file, enc, cb)).catch(error => {
-        return failed(file, error, enc, cb)
-      })
+      then
+        .then(() => done(file, enc, cb))
+        .catch(error => failed(file, error, enc, cb))
     } else {
       done(file, enc, cb)
     }

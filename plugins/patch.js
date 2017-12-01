@@ -8,6 +8,7 @@ export function patch (file) {
   return newPatch(file).then(add => {
     if (add) {
       log('new patch', colors.cyan(file.patchFile))
+
       _this.push(new File({
         contents: Buffer.from(file.patch),
         path: file.patchFile
