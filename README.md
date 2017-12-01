@@ -16,6 +16,16 @@
   └── fix
 ```
 
+## Usage
+
+```bash
+odt urls
+
+odt urls -LL
+
+odt add --url http://petstore.swagger.io/v2/swagger.json -s petstore
+```
+
 ## Development
 
 ```bash
